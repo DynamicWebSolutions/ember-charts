@@ -1,6 +1,6 @@
 Ember.Charts.ChartComponent = Ember.Component.extend(
   Ember.Charts.Colorable,
-  templateName: 'chart'
+  layoutName: 'chart'
   classNames: ['chart-frame', 'scroll-y']
   isInteractive: yes
 
