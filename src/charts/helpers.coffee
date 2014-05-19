@@ -3,12 +3,25 @@ Ember.Charts.Helpers = Ember.Namespace.create
   # a getter as the second argument
   groupBy: (obj, getter) ->
     result = {}
+
+    if obj.every( => @isOrdered)
+      obj.sortBy('order')
+      .getEach('group')
+      .uniq()
+      .forEach (key) -> 
+        result[key] = []
+      
+
     for index in [0...obj.length]
       value = obj[index]
       key = getter(value, index)
       group = result[key] || (result[key] = [])
       group.push(value)
     result
+
+  # GroupBy every callback
+  isOrdered: (obj) ->
+    obj.hasOwnProperty('order') 
 
   # LabelTrimmer provides a trim() method to be invoked on a D3 selection, which
   # will truncate the labels to a length defined by getLabelSize(), filling them
