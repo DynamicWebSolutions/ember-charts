@@ -61,6 +61,7 @@ Ember.Charts.PieComponent = Ember.Charts.ChartComponent.extend(
     return [] if total is 0
 
     data = data.map (d) ->
+      color: d.color
       label: d.label
       value: d.value
       percent: d3.round( 100 * d.value / total )
@@ -83,6 +84,7 @@ Ember.Charts.PieComponent = Ember.Charts.ChartComponent.extend(
     lowPercentIndex = _.indexOf data, _.find(data, (d) =>
       d.percent < minSlicePercent
     )
+
     # Guard against not finding any slices below the threshold
     if lowPercentIndex < 0
       lowPercentIndex = data.length
@@ -111,9 +113,14 @@ Ember.Charts.PieComponent = Ember.Charts.ChartComponent.extend(
         otherSlice.percent += d.percent
       slicesLeft = _.first slicesLeft, maxNumberOfSlices
 
-    slicesLeft.push(otherSlice) if otherSlice.percent > 0
-    return slicesLeft.reverse()
+    # only push other slice if there is more than one other item
+    if otherItems.length is 1
+      slicesLeft.push(otherItems[0])
+    else if otherSlice.percent > 0
+      slicesLeft.push(otherSlice)
 
+    # make slices appear in descending order
+    return slicesLeft.reverse()
   .property 'sortedData', 'maxNumberOfSlices', 'minSlicePercent'
 
   otherData: Ember.computed ->
@@ -144,9 +151,19 @@ Ember.Charts.PieComponent = Ember.Charts.ChartComponent.extend(
 
   # Top margin will only be a percentage of the bottom margin since we don't
   # have a legend there and would like the pie to lift to the top
+  # Note(edward): There can be multiple legends on the top depending on the data.
+  # If 2nd and 3rd largest slices sum to less than 15%, then there will be at
+  # least two legends stacked on the top of the pie, and so we need to return a
+  # larger marginTop.
   marginTop: Ember.computed ->
-    0.3 * @get('marginBottom')
-  .property 'marginBottom'
+    finishedData = @get('finishedData')
+    dataLength = finishedData.length
+    if finishedData.length > 2 and
+    finishedData[dataLength - 3].percent + finishedData[dataLength - 2].percent < 15
+      @get('marginBottom')
+    else
+      0.3 * @get('marginBottom')
+  .property 'marginBottom', 'finishedData'
 
   # ----------------------------------------------------------------------------
   # Graphics Properties
@@ -179,6 +196,8 @@ Ember.Charts.PieComponent = Ember.Charts.ChartComponent.extend(
 
   getSliceColor: Ember.computed ->
     (d, i) =>
+      return d.data.color if d.data?.color
+
       numSlices = @get 'numSlices'
       # Data is sorted ascending so need to reverse to pick color
       index = numSlices - i - 1
