@@ -173,8 +173,16 @@ if ((_ref = Ember.libraries) != null) {
 
 Ember.Charts.Helpers = Ember.Namespace.create({
   groupBy: function(obj, getter) {
-    var group, index, key, result, value, _i, _ref;
+    var group, index, key, result, value, _i, _ref,
+      _this = this;
     result = {};
+    if (obj.every(function() {
+      return _this.isOrdered;
+    })) {
+      obj.sortBy('order').getEach('group').uniq().forEach(function(key) {
+        return result[key] = [];
+      });
+    }
     for (index = _i = 0, _ref = obj.length; 0 <= _ref ? _i < _ref : _i > _ref; index = 0 <= _ref ? ++_i : --_i) {
       value = obj[index];
       key = getter(value, index);
@@ -182,6 +190,9 @@ Ember.Charts.Helpers = Ember.Namespace.create({
       group.push(value);
     }
     return result;
+  },
+  isOrdered: function(obj) {
+    return obj.hasOwnProperty('order');
   },
   LabelTrimmer: Ember.Object.extend({
     getLabelSize: function(d, selection) {
