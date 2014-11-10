@@ -1,7 +1,10 @@
 # Creates time series labels that are spaced reasonably.
 # Provides @formattedTime. Depends on @xDomain and @selectedInterval.
-
 Ember.Charts.TimeSeriesLabeler = Ember.Mixin.create
+
+  # When set to true, ticks are drawn in the middle of an interval. By default,
+  # they are drawn at the start of an interval.
+  centerAxisLabels: no
 
   # Interval for ticks on time axis can be:
   # years, months, weeks, days
@@ -47,8 +50,25 @@ Ember.Charts.TimeSeriesLabeler = Ember.Mixin.create
   #  This is the set of ticks on which labels appear.
   labelledTicks: Ember.computed ->
     domain = @get 'xDomain'
-    @get('getLabelledTicks')(domain[0], domain[1])
+    ticks = @get('tickLabelerFn')(domain[0], domain[1])
+    unless @get 'centerAxisLabels'
+      ticks
+    else
+      count = 1
+      interval = switch @get('selectedInterval')
+        when 'years', 'Y' then 'year'
+        when 'quarters', 'Q' then 'quarter'
+        when 'months', 'M' then 'month'
+        when 'weeks' , 'W'  then 'week'
+        when 'seconds', 'S' then 'second'
+      if interval is 'quarter'
+        count = 3
+        interval = 'month'
+      (@_advanceMiddle(tick, interval, count) for tick in ticks)
   .property 'xDomain'
+
+  _advanceMiddle: (time, interval, count) ->
+    new Date (time = time.getTime()/2 + d3.time[interval].offset(time, count)/2)
 
   # the years which should be labelled
   labelledYears: (start, stop) ->
@@ -111,7 +131,7 @@ Ember.Charts.TimeSeriesLabeler = Ember.Mixin.create
 
   # Returns the function which returns the labelled intervals between
   # start and stop for the selected interval.
-  getLabelledTicks: Ember.computed ->
+  tickLabelerFn: Ember.computed ->
     switch @get 'selectedInterval'
       when 'years', 'Y' then ((start, stop) => @labelledYears(start, stop))
       when 'quarters', 'Q' then ((start, stop) => @labelledQuarters(start,stop))
@@ -123,12 +143,16 @@ Ember.Charts.TimeSeriesLabeler = Ember.Mixin.create
   .property 'maxNumberOfLabels', 'selectedInterval'
 
   quarterFormat: (d) ->
-    prefix =
-      switch d.getMonth() % 12
-        when 0 then 'Q1'
-        when 3 then 'Q2'
-        when 6 then 'Q3'
-        when 9 then 'Q4'
+    month = d.getMonth() % 12
+    prefix = ""
+    if month < 3
+      prefix = 'Q1'
+    else if month < 6
+      prefix = 'Q2'
+    else if month < 9
+      prefix = 'Q3'
+    else
+      prefix = 'Q4'
     suffix =
       d3.time.format('%Y') (d)
 
@@ -145,4 +169,3 @@ Ember.Charts.TimeSeriesLabeler = Ember.Mixin.create
       when 'seconds' , 'S' then d3.time.format('%M : %S')
       else d3.time.format('%Y')
   .property 'selectedInterval'
-

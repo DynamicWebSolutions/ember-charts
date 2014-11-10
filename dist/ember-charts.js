@@ -1,5 +1,5 @@
 /*!
-* ember-charts v0.2.0
+* ember-charts v0.3.0
 * Copyright 2012-2014 Addepar Inc.
 * See LICENSE.
 */
@@ -159,7 +159,7 @@ Ember.AddeparMixins.StyleBindingsMixin = Ember.Mixin.create({
 
 Ember.Charts = Ember.Namespace.create();
 
-Ember.Charts.VERSION = '0.2.0';
+Ember.Charts.VERSION = '0.3.0';
 
 if ((_ref = Ember.libraries) != null) {
   _ref.register('Ember Charts', Ember.Charts.VERSION);
@@ -320,9 +320,13 @@ Ember.Charts.Colorable = Ember.Mixin.create({
 
 
 Ember.Charts.AxesMixin = Ember.Mixin.create({
+  graphicWidth: null,
+  graphicHeight: null,
   minXTicks: 3,
   minYTicks: 3,
   tickSpacing: 50,
+  minAxisValue: 0,
+  maxAxisValue: 0,
   numXTicks: Ember.computed(function() {
     var calculatedTicks;
     calculatedTicks = Math.floor(this.get('graphicWidth') / this.get('tickSpacing'));
@@ -332,7 +336,15 @@ Ember.Charts.AxesMixin = Ember.Mixin.create({
     var calculatedTicks;
     calculatedTicks = Math.floor(this.get('graphicHeight') / this.get('tickSpacing'));
     return Math.max(calculatedTicks, this.get('minYTicks'));
-  }).property('graphicHeight', 'tickSpacing', 'minYTicks')
+  }).property('graphicHeight', 'tickSpacing', 'minYTicks'),
+  formatValueAxis: Ember.computed(function() {
+    var formatter, magnitude, prefix;
+    magnitude = Math.max(Math.abs(this.get('minAxisValue')), Math.abs(this.get('maxAxisValue')));
+    prefix = d3.formatPrefix(magnitude);
+    return formatter = function(value) {
+      return "" + (prefix.scale(value)) + prefix.symbol;
+    };
+  }).property('minAxisValue', 'maxAxisValue')
 });
 
 
@@ -342,34 +354,40 @@ Ember.Charts.AxesMixin = Ember.Mixin.create({
 
 
 Ember.Charts.FloatingTooltipMixin = Ember.Mixin.create({
-  tooltipId: Ember.computed(function() {
-    return this.get('elementId') + '_tooltip';
-  }),
+  elementId: null,
   tooltipWidth: 40,
   tooltipValueDisplayName: 'Value',
   showTooltip: function(content, event) {
     var $ttid;
-    $ttid = this.get('$tooltip');
+    $ttid = this._getTooltip();
     $ttid.html(content);
     $ttid.show();
-    return this.updatePosition(event);
+    return this._updateTooltipPosition(event);
   },
   hideTooltip: function() {
-    return this.get('$tooltip').hide();
+    return this._getTooltip().hide();
   },
-  updatePosition: function(event) {
-    var $tooltipId, curX, curY, height, minTooltipLeft, minTooltipTop, tooltipLeft, tooltipTop, width, windowScrollLeft, windowScrollTop, xOffset, yOffset;
-    $tooltipId = this.get('$tooltip');
+  _tooltipId: Ember.computed(function() {
+    return this.get('elementId') + '_tooltip';
+  }),
+  _getTooltip: function() {
+    return $("#" + (this.get('_tooltipId')));
+  },
+  _updateTooltipPosition: function(event) {
+    var $tooltip, curX, curY, height, minTooltipLeft, minTooltipTop, tooltipLeft, tooltipLeftOffset, tooltipTop, tooltipTopOffset, width, windowScrollLeft, windowScrollTop, xOffset, yOffset;
+    $tooltip = this._getTooltip();
     xOffset = 10;
     yOffset = 10;
-    width = $tooltipId.width();
-    height = $tooltipId.height();
+    width = $tooltip.width();
+    height = $tooltip.height();
     windowScrollTop = $(window).scrollTop();
     windowScrollLeft = $(window).scrollLeft();
     curX = event.clientX + windowScrollLeft;
     curY = event.clientY + windowScrollTop;
-    tooltipLeft = curX + ((curX - windowScrollLeft + xOffset * 2 + width) > $(window).width() ? -(width + xOffset * 2) : xOffset);
-    tooltipTop = curY + ((curY - windowScrollTop + yOffset * 2 + height) > $(window).height() ? -(height + yOffset * 2) : yOffset);
+    tooltipLeftOffset = (curX - windowScrollLeft + xOffset * 2 + width) > $(window).width() ? -(width + xOffset * 2) : xOffset;
+    tooltipLeft = curX + tooltipLeftOffset;
+    tooltipTopOffset = (curY - windowScrollTop + yOffset * 2 + height) > $(window).height() ? -(height + yOffset * 2) : yOffset;
+    tooltipTop = curY + tooltipTopOffset;
     minTooltipLeft = windowScrollLeft + xOffset;
     minTooltipTop = windowScrollTop + yOffset;
     if (tooltipLeft < minTooltipLeft) {
@@ -378,24 +396,17 @@ Ember.Charts.FloatingTooltipMixin = Ember.Mixin.create({
     if (tooltipTop < windowScrollTop + yOffset) {
       tooltipTop = minTooltipTop;
     }
-    return $tooltipId.css('top', tooltipTop + 'px').css('left', tooltipLeft + 'px');
+    return $tooltip.css('top', tooltipTop + 'px').css('left', tooltipLeft + 'px');
   },
   didInsertElement: function() {
     this._super();
-    $("body").append("<div class='chart-float-tooltip' id='" + (this.get('tooltipId')) + "'></div>");
+    $("body").append("<div class='chart-float-tooltip' id='" + (this.get('_tooltipId')) + "'></div>");
     return this.hideTooltip();
   },
   willDestroyElement: function() {
     this._super();
-    return this.get('$tooltip').remove();
-  },
-  widthDidChange: function() {
-    return this.get('$tooltip').css('width', this.get('tooltipWidth'));
+    return this._getTooltip().remove();
   }
-}, 'tooltipWidth', {
-  $tooltip: Ember.computed(function() {
-    return $("#" + (this.get('tooltipId')));
-  }).volatile()
 });
 
 
@@ -405,31 +416,79 @@ Ember.Charts.FloatingTooltipMixin = Ember.Mixin.create({
 
 
 Ember.Charts.HasTimeSeriesRule = Ember.Mixin.create({
-  lineMarkerTolerance: 60 * 1000,
-  mousePosition: Ember.computed(function() {
+  xRange: null,
+  yRange: null,
+  xTimeScale: null,
+  showDetails: null,
+  hideDetails: null,
+  lineColorFn: null,
+  graphicHeight: null,
+  updateLineMarkers: function() {
+    var hideDetails, lineMarkers, showDetails;
+    lineMarkers = this._getLineMarkers();
+    showDetails = this.get('showDetails');
+    hideDetails = this.get('hideDetails');
+    lineMarkers.enter().append('path').on("mouseover", function(d, i) {
+      return showDetails(d, i, this);
+    }).on("mouseout", function(d, i) {
+      return hideDetails(d, i, this);
+    }).attr({
+      "class": 'line-marker',
+      fill: this.get('lineColorFn'),
+      d: d3.svg.symbol().size(50).type('circle')
+    });
+    lineMarkers.exit().remove();
+    lineMarkers.attr({
+      transform: function(d) {
+        return "translate(" + d.x + "," + d.y + ")";
+      }
+    });
+    return lineMarkers.style({
+      'stroke-width': function(d) {
+        return d3.select(d.path).attr('stroke-width');
+      }
+    });
+  },
+  _getLineMarkers: function() {
+    return this.get('viewport').selectAll('.line-marker').data(this._lineMarkerData());
+  },
+  didInsertElement: function() {
+    var _this = this;
+    this._super();
+    return d3.select(this.$('svg')[0]).on('mousemove', function() {
+      if (!_this.get('isInteractive')) {
+        return;
+      }
+      if (_this._isEventWithinValidRange()) {
+        return Ember.run(_this, _this.get('updateLineMarkers'));
+      }
+    });
+  },
+  _lineMarkerTolerance: 60 * 1000,
+  _mousePosition: function() {
     if (!d3.event) {
       return null;
     }
     return d3.mouse(this.get('$viewport'));
-  }).volatile(),
-  isEventWithinValidRange: Ember.computed(function() {
+  },
+  _isEventWithinValidRange: function() {
     var inX, inY, x, xRange, y, yRange, _ref;
     xRange = this.get('xRange');
     yRange = this.get('yRange');
-    _ref = this.get('mousePosition'), x = _ref[0], y = _ref[1];
+    _ref = this._mousePosition(), x = _ref[0], y = _ref[1];
     inX = (d3.min(xRange) < x && x < d3.max(xRange));
     inY = (d3.min(yRange) < y && y < d3.max(yRange));
     return inX && inY;
-  }).volatile(),
-  lineMarkerData: Ember.computed(function() {
+  },
+  _lineMarkerData: function() {
     var invXScale, invYScale, lineMarkerTolerance, markerData, mousePosition, timeX;
-    mousePosition = this.get('mousePosition');
+    mousePosition = this._mousePosition();
     if (Ember.isEmpty(mousePosition)) {
       return [];
     }
     invXScale = this.get('xTimeScale').invert;
     invYScale = this.get('yScale').invert;
-    lineMarkerTolerance = this.get('lineMarkerTolerance');
+    lineMarkerTolerance = this.get('_lineMarkerTolerance');
     timeX = invXScale(mousePosition[0]);
     markerData = [];
     this.get('viewport').selectAll('path.line').each(function(d, i) {
@@ -459,91 +518,7 @@ Ember.Charts.HasTimeSeriesRule = Ember.Mixin.create({
       });
     });
     return markerData;
-  }).volatile(),
-  rule: Ember.computed(function() {
-    var rule;
-    rule = this.get('viewport').select('.rule');
-    if (rule.empty()) {
-      return this.get('viewport').insert('line', '.series').style('stroke-width', 0).attr('class', 'rule');
-    } else {
-      return rule;
-    }
-  }).volatile(),
-  lineMarkers: Ember.computed(function() {
-    return this.get('viewport').selectAll('.line-marker').data(this.get('lineMarkerData'));
-  }).volatile(),
-  updateLineMarkers: function() {
-    var hideDetails, lineMarkers, showDetails;
-    showDetails = this.get('showDetails');
-    hideDetails = this.get('hideDetails');
-    lineMarkers = this.get('lineMarkers');
-    lineMarkers.enter().append('path').on("mouseover", function(d, i) {
-      return showDetails(d, i, this);
-    }).on("mouseout", function(d, i) {
-      return hideDetails(d, i, this);
-    }).attr({
-      "class": 'line-marker',
-      fill: this.get('getLineColor'),
-      d: d3.svg.symbol().size(50).type('circle')
-    });
-    lineMarkers.exit().remove();
-    lineMarkers.attr({
-      transform: function(d) {
-        return "translate(" + d.x + "," + d.y + ")";
-      }
-    });
-    return lineMarkers.style({
-      'stroke-width': function(d) {
-        return d3.select(d.path).attr('stroke-width');
-      }
-    });
-  },
-  updateRule: function() {
-    var x, zeroDisplacement;
-    zeroDisplacement = 1;
-    x = (this.get('mousePosition') || [0])[0];
-    return this.get('rule').attr({
-      x1: x,
-      x2: x,
-      y0: 0,
-      y1: this.get('graphicHeight') - zeroDisplacement
-    });
-  },
-  didInsertElement: function() {
-    var _this = this;
-    this._super();
-    this.get('hideRule')();
-    return d3.select(this.$('svg')[0]).on('mousemove', function() {
-      if (!_this.get('isInteractive')) {
-        return;
-      }
-      if (_this.get('isEventWithinValidRange')) {
-        _this.get('showRule')();
-        Ember.run(_this, _this.get('updateRule'));
-        return Ember.run(_this, _this.get('updateLineMarkers'));
-      } else {
-        return _this.get('hideRule')();
-      }
-    });
-  },
-  isRuleShown: false,
-  showRule: Ember.computed(function() {
-    var _this = this;
-    return function(d) {
-      if (!_this.get('hasLineData')) {
-        return;
-      }
-      _this.get('rule').style('stroke-width', 1.5);
-      return _this.get('lineMarkers').style('opacity', 1);
-    };
-  }),
-  hideRule: Ember.computed(function() {
-    var _this = this;
-    return function(d) {
-      _this.get('rule').style('stroke-width', 0);
-      return _this.get('lineMarkers').style('opacity', 0);
-    };
-  })
+  }
 });
 
 
@@ -553,6 +528,7 @@ Ember.Charts.HasTimeSeriesRule = Ember.Mixin.create({
 
 
 Ember.Charts.TimeSeriesLabeler = Ember.Mixin.create({
+  centerAxisLabels: false,
   selectedInterval: 'M',
   maxNumberOfLabels: 10,
   numberOfMinorTicks: Ember.computed(function() {
@@ -591,10 +567,47 @@ Ember.Charts.TimeSeriesLabeler = Ember.Mixin.create({
     return secondIndex - firstIndex - 1;
   }).property('xDomain', 'selectedInterval'),
   labelledTicks: Ember.computed(function() {
-    var domain;
+    var count, domain, interval, tick, ticks, _i, _len, _results;
     domain = this.get('xDomain');
-    return this.get('getLabelledTicks')(domain[0], domain[1]);
+    ticks = this.get('tickLabelerFn')(domain[0], domain[1]);
+    if (!this.get('centerAxisLabels')) {
+      return ticks;
+    } else {
+      count = 1;
+      interval = (function() {
+        switch (this.get('selectedInterval')) {
+          case 'years':
+          case 'Y':
+            return 'year';
+          case 'quarters':
+          case 'Q':
+            return 'quarter';
+          case 'months':
+          case 'M':
+            return 'month';
+          case 'weeks':
+          case 'W':
+            return 'week';
+          case 'seconds':
+          case 'S':
+            return 'second';
+        }
+      }).call(this);
+      if (interval === 'quarter') {
+        count = 3;
+        interval = 'month';
+      }
+      _results = [];
+      for (_i = 0, _len = ticks.length; _i < _len; _i++) {
+        tick = ticks[_i];
+        _results.push(this._advanceMiddle(tick, interval, count));
+      }
+      return _results;
+    }
   }).property('xDomain'),
+  _advanceMiddle: function(time, interval, count) {
+    return new Date((time = time.getTime() / 2 + d3.time[interval].offset(time, count) / 2));
+  },
   labelledYears: function(start, stop) {
     var skipVal, years;
     years = d3.time.years(start, stop);
@@ -658,7 +671,7 @@ Ember.Charts.TimeSeriesLabeler = Ember.Mixin.create({
       return weeks;
     }
   },
-  getLabelledTicks: Ember.computed(function() {
+  tickLabelerFn: Ember.computed(function() {
     var _this = this;
     switch (this.get('selectedInterval')) {
       case 'years':
@@ -694,19 +707,18 @@ Ember.Charts.TimeSeriesLabeler = Ember.Mixin.create({
     }
   }).property('maxNumberOfLabels', 'selectedInterval'),
   quarterFormat: function(d) {
-    var prefix, suffix;
-    prefix = (function() {
-      switch (d.getMonth() % 12) {
-        case 0:
-          return 'Q1';
-        case 3:
-          return 'Q2';
-        case 6:
-          return 'Q3';
-        case 9:
-          return 'Q4';
-      }
-    })();
+    var month, prefix, suffix;
+    month = d.getMonth() % 12;
+    prefix = "";
+    if (month < 3) {
+      prefix = 'Q1';
+    } else if (month < 6) {
+      prefix = 'Q2';
+    } else if (month < 9) {
+      prefix = 'Q3';
+    } else {
+      prefix = 'Q4';
+    }
     suffix = d3.time.format('%Y')(d);
     return prefix + ' ' + suffix;
   },
@@ -1101,9 +1113,10 @@ Ember.Charts.ChartComponent = Ember.Component.extend(Ember.Charts.Colorable, Emb
     _results = [];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       renderVar = _ref[_i];
-      _results.push(this.addObserver(renderVar, function() {
+      this.addObserver(renderVar, function() {
         return Ember.run.once(_this, _this.get('draw'));
-      }));
+      });
+      _results.push(this.get(renderVar));
     }
     return _results;
   },
@@ -1123,7 +1136,7 @@ Ember.Charts.ChartComponent = Ember.Component.extend(Ember.Charts.Colorable, Emb
     return this.$('.chart-viewport').children().remove();
   },
   draw: function() {
-    if (this.get('state') !== 'inDOM') {
+    if ((this._state || this.state) !== "inDOM") {
       return;
     }
     if (this.get('hasNoData')) {
@@ -1142,8 +1155,7 @@ Ember.Charts.ChartComponent = Ember.Component.extend(Ember.Charts.Colorable, Emb
 
 Ember.Charts.HorizontalBarComponent = Ember.Charts.ChartComponent.extend(Ember.Charts.FloatingTooltipMixin, {
   classNames: ['chart-horizontal-bar'],
-  formatValue: d3.format('.2s'),
-  formatValueLong: d3.format(',.r'),
+  formatLabel: d3.format(',.2f'),
   selectedSortType: 'value',
   defaultOuterHeight: 500,
   labelWidth: Ember.computed(function() {
@@ -1236,12 +1248,12 @@ Ember.Charts.HorizontalBarComponent = Ember.Charts.ChartComponent.extend(Ember.C
       return Ember.K;
     }
     return function(data, i, element) {
-      var content, formatValue;
+      var content, formatLabel;
       d3.select(element).classed('hovered', true);
-      formatValue = _this.get('formatValue');
+      formatLabel = _this.get('formatLabel');
       content = "<span class=\"tip-label\">" + data.label + "</span>";
       content += "<span class=\"name\">" + (_this.get('tooltipValueDisplayName')) + ": </span>";
-      content += "<span class=\"value\">" + (formatValue(data.value)) + "</span>";
+      content += "<span class=\"value\">" + (formatLabel(data.value)) + "</span>";
       return _this.showTooltip(content, d3.event);
     };
   }).property('isInteractive'),
@@ -1392,7 +1404,7 @@ Ember.Charts.HorizontalBarComponent = Ember.Charts.ChartComponent.extend(Ember.C
     groups = this.get('groups').attr(this.get('groupAttrs'));
     groups.select('rect').attr(this.get('barAttrs'));
     valueLabels = groups.select('text.value').text(function(d) {
-      return _this.get('formatValue')(d.value);
+      return _this.get('formatLabel')(d.value);
     }).attr(this.get('valueLabelAttrs'));
     labelWidth = this.get('labelWidth');
     labelTrimmer = Ember.Charts.Helpers.LabelTrimmer.create({
@@ -1419,8 +1431,7 @@ Ember.Handlebars.helper('horizontal-bar-chart', Ember.Charts.HorizontalBarCompon
 
 Ember.Charts.PieComponent = Ember.Charts.ChartComponent.extend(Ember.Charts.PieLegend, Ember.Charts.FloatingTooltipMixin, {
   classNames: ['chart-pie'],
-  formatValue: d3.format('.2s'),
-  formatValueLong: d3.format(',.r'),
+  formatLabel: d3.format(',.2f'),
   minSlicePercent: 5,
   maxNumberOfSlices: 8,
   labelWidth: Ember.computed(function() {
@@ -1600,16 +1611,16 @@ Ember.Charts.PieComponent = Ember.Charts.ChartComponent.extend(Ember.Charts.PieL
       return Ember.K;
     }
     return function(d, i, element) {
-      var content, data, formatValue;
+      var content, data, formatLabel;
       d3.select(element).classed('hovered', true);
       data = d.data;
       if (data._otherItems) {
         return _this.get('viewport').select('.legend').classed('hovered', true);
       } else {
-        formatValue = _this.get('formatValue');
+        formatLabel = _this.get('formatLabel');
         content = "<span class=\"tip-label\">" + data.label + "</span>";
         content += "<span class=\"name\">" + (_this.get('tooltipValueDisplayName')) + ": </span>";
-        content += "<span class=\"value\">" + (formatValue(data.value)) + "</span>";
+        content += "<span class=\"value\">" + (formatLabel(data.value)) + "</span>";
         return _this.showTooltip(content, d3.event);
       }
     };
@@ -1779,8 +1790,8 @@ Ember.Handlebars.helper('pie-chart', Ember.Charts.PieComponent);
 
 Ember.Charts.VerticalBarComponent = Ember.Charts.ChartComponent.extend(Ember.Charts.Legend, Ember.Charts.FloatingTooltipMixin, Ember.Charts.AxesMixin, {
   classNames: ['chart-vertical-bar'],
-  formatValue: d3.format('.2s'),
-  formatValueLong: d3.format(',.r'),
+  formatLabel: d3.format(',.2f'),
+  selectedSortType: 'none',
   ungroupedSeriesName: 'Other',
   stackBars: false,
   withinGroupPadding: 0,
@@ -1796,7 +1807,7 @@ Ember.Charts.VerticalBarComponent = Ember.Charts.ChartComponent.extend(Ember.Cha
   groupedData: Ember.computed(function() {
     var data,
       _this = this;
-    data = this.get('data');
+    data = this.get('sortedData');
     if (Ember.isEmpty(data)) {
       return [];
     }
@@ -1804,7 +1815,24 @@ Ember.Charts.VerticalBarComponent = Ember.Charts.ChartComponent.extend(Ember.Cha
       var _ref;
       return (_ref = d.group) != null ? _ref : _this.get('ungroupedSeriesName');
     });
-  }).property('data.@each', 'ungroupedSeriesName'),
+  }).property('sortedData', 'ungroupedSeriesName'),
+  sortedData: Ember.computed(function() {
+    var data, type;
+    type = this.get('selectedSortType');
+    data = this.get('data');
+    if (type === 'value') {
+      data = data.sort(function(a, b) {
+        if (a.value < b.value) {
+          return 1;
+        } else if (a.value > b.value) {
+          return -1;
+        } else {
+          return 0;
+        }
+      });
+    }
+    return data;
+  }).property('selectedSortType', 'data.@each'),
   groupNames: Ember.computed(function() {
     var groupName, values, _ref, _results;
     _ref = this.get('groupedData');
@@ -1883,7 +1911,7 @@ Ember.Charts.VerticalBarComponent = Ember.Charts.ChartComponent.extend(Ember.Cha
       if (Ember.isEmpty(this.get('data'))) {
         return [];
       }
-      _ref1 = this.get('data');
+      _ref1 = this.get('sortedData');
       _results1 = [];
       for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
         d = _ref1[_i];
@@ -1894,7 +1922,7 @@ Ember.Charts.VerticalBarComponent = Ember.Charts.ChartComponent.extend(Ember.Cha
       }
       return _results1;
     }
-  }).property('groupedData', 'isGrouped', 'stackBars'),
+  }).property('groupedData', 'isGrouped', 'stackBars', 'sortedData'),
   labelHeightOffset: Ember.computed(function() {
     var labelSize;
     labelSize = this.get('_shouldRotateLabels') ? this.get('maxLabelHeight') : this.get('labelHeight');
@@ -1981,6 +2009,16 @@ Ember.Charts.VerticalBarComponent = Ember.Charts.ChartComponent.extend(Ember.Cha
     }
     return d3.scale.ordinal().domain(this.get('xBetweenGroupDomain')).rangeRoundBands([0, this.get('graphicWidth')], betweenGroupPadding / 2, betweenGroupPadding / 2);
   }).property('isGrouped', 'stackBars', 'graphicWidth', 'labelWidth', 'xBetweenGroupDomain', 'betweenGroupPadding'),
+  minAxisValue: Ember.computed(function() {
+    var yScale;
+    yScale = this.get('yScale');
+    return yScale.domain()[0];
+  }).property('yScale'),
+  maxAxisValue: Ember.computed(function() {
+    var yScale;
+    yScale = this.get('yScale');
+    return yScale.domain()[1];
+  }).property('yScale'),
   numColorSeries: Ember.computed.alias('individualBarLabels.length'),
   hasLegend: Ember.computed(function() {
     return this.get('stackBars') || this.get('isGrouped') && this.get('legendItems.length') > 1;
@@ -2008,15 +2046,19 @@ Ember.Charts.VerticalBarComponent = Ember.Charts.ChartComponent.extend(Ember.Cha
       return Ember.K;
     }
     return function(data, i, element) {
-      var addValueLine, content, formatValue, isGroup;
+      var addValueLine, content, formatLabel, isGroup;
       isGroup = Ember.isArray(data.values);
       element = isGroup ? element.parentNode.parentNode : element;
       d3.select(element).classed('hovered', true);
-      content = "<span class=\"tip-label\">" + data.group + "</span>";
-      formatValue = _this.get('formatValue');
+      if (data.group) {
+        content = "<span class=\"tip-label\">" + data.group + "</span>";
+      } else {
+        content = '';
+      }
+      formatLabel = _this.get('formatLabel');
       addValueLine = function(d) {
         content += "<span class=\"name\">" + d.label + ": </span>";
-        return content += "<span class=\"value\">" + (formatValue(d.value)) + "</span><br/>";
+        return content += "<span class=\"value\">" + (formatLabel(d.value)) + "</span><br/>";
       };
       if (isGroup) {
         data.values.forEach(addValueLine);
@@ -2250,7 +2292,7 @@ Ember.Charts.VerticalBarComponent = Ember.Charts.ChartComponent.extend(Ember.Cha
   },
   updateAxes: function() {
     var gYAxis, graphicLeft, graphicTop, yAxis;
-    yAxis = d3.svg.axis().scale(this.get('yScale')).orient('right').ticks(this.get('numYTicks')).tickSize(this.get('graphicWidth')).tickFormat(this.get('formatValue'));
+    yAxis = d3.svg.axis().scale(this.get('yScale')).orient('right').ticks(this.get('numYTicks')).tickSize(this.get('graphicWidth')).tickFormat(this.get('formatValueAxis'));
     graphicTop = this.get('graphicTop');
     graphicLeft = this.get('graphicLeft');
     gYAxis = this.get('yAxis').attr({
@@ -2287,10 +2329,8 @@ Ember.Handlebars.helper('vertical-bar-chart', Ember.Charts.VerticalBarComponent)
 
 Ember.Charts.ScatterComponent = Ember.Charts.ChartComponent.extend(Ember.Charts.Legend, Ember.Charts.FloatingTooltipMixin, Ember.Charts.AxesMixin, {
   classNames: ['chart-scatter'],
-  formatXValue: d3.format('.2s'),
-  formatYValue: d3.format('.2s'),
-  formatXValueLong: d3.format(',.r'),
-  formatYValueLong: d3.format(',.r'),
+  formatXValue: d3.format(',.2f'),
+  formatYValue: d3.format(',.2f'),
   dotRadius: 7,
   dotShapeArea: Ember.computed(function() {
     return Math.pow(this.get('dotRadius'), 2);
@@ -2675,26 +2715,40 @@ Ember.Handlebars.helper('scatter-chart', Ember.Charts.ScatterComponent);
 
 Ember.Charts.TimeSeriesComponent = Ember.Charts.ChartComponent.extend(Ember.Charts.Legend, Ember.Charts.TimeSeriesLabeler, Ember.Charts.FloatingTooltipMixin, Ember.Charts.HasTimeSeriesRule, Ember.Charts.AxesMixin, {
   classNames: ['chart-time-series'],
+  lineData: null,
+  barData: null,
   formatTime: d3.time.format('%Y-%m-%d'),
   formatTimeLong: d3.time.format('%a %b %-d, %Y'),
-  formatValue: d3.format('.2s'),
-  formatValueLong: d3.format(',.r'),
+  formatLabel: d3.format(',.2f'),
   ungroupedSeriesName: 'Other',
-  stackBars: false,
   interpolate: false,
   yAxisFromZero: false,
   barPadding: 0,
   barGroupPadding: 0.25,
-  groupedLineData: Ember.computed(function() {
+  barLeftOffset: 0.0,
+  finishedData: Ember.computed(function() {
+    return {
+      lineData: this.get('_groupedLineData'),
+      groupedBarData: this.get('_groupedBarData')
+    };
+  }).property('_groupedLineData.@each.values', '_groupedBarData.@each'),
+  hasNoData: Ember.computed(function() {
+    return !this.get('_hasBarData') && !this.get('_hasLineData');
+  }).property('_hasBarData', '_hasLineData'),
+  legendChartPadding: Ember.computed.alias('labelHeightOffset'),
+  _getLabelOrDefault: function(datum) {
+    var _ref;
+    return ((_ref = datum.label) != null ? _ref.toString() : void 0) || this.get('ungroupedSeriesName');
+  },
+  _groupedLineData: Ember.computed(function() {
     var groupName, groups, lineData, values, _results,
       _this = this;
     lineData = this.get('lineData');
     if (Ember.isEmpty(lineData)) {
       return [];
     }
-    groups = Ember.Charts.Helpers.groupBy(lineData, function(d) {
-      var _ref;
-      return (_ref = d.label) != null ? _ref : _this.get('ungroupedSeriesName');
+    groups = Ember.Charts.Helpers.groupBy(lineData, function(datum) {
+      return _this._getLabelOrDefault(datum);
     });
     _results = [];
     for (groupName in groups) {
@@ -2706,127 +2760,100 @@ Ember.Charts.TimeSeriesComponent = Ember.Charts.ChartComponent.extend(Ember.Char
     }
     return _results;
   }).property('lineData.@each', 'ungroupedSeriesName'),
-  groupedBarData: Ember.computed(function() {
-    var barData, barGroupsByTime, barTimes, g, groups, grps, timePoint, v;
+  _groupedBarData: Ember.computed(function() {
+    var barData, barGroupsByTime, barTimes, drawTime, g, groups, label, labelTime, timePoint;
     barData = this.get('barData');
     if (Ember.isEmpty(barData)) {
       return [];
     }
     barTimes = Ember.Charts.Helpers.groupBy(barData, function(d) {
-      return +d.time;
+      return d.time.getTime();
     });
     return barGroupsByTime = (function() {
-      var _results,
-        _this = this;
+      var _results;
       _results = [];
       for (timePoint in barTimes) {
         groups = barTimes[timePoint];
-        grps = Ember.Charts.Helpers.groupBy(groups, function(d) {
-          var _ref;
-          return (_ref = d.label) != null ? _ref : _this.get('ungroupedSeriesName');
-        });
         _results.push((function() {
-          var _results1;
+          var _i, _len, _results1;
           _results1 = [];
-          for (g in grps) {
-            v = grps[g];
+          for (_i = 0, _len = groups.length; _i < _len; _i++) {
+            g = groups[_i];
+            label = this._getLabelOrDefault(g);
+            labelTime = g.time;
+            drawTime = this._transformCenter(g.time);
             _results1.push({
-              group: g,
-              time: v[0].time,
-              value: v[0].value,
-              label: v[0].label
+              group: label,
+              time: drawTime,
+              value: g.value,
+              label: label,
+              labelTime: labelTime
             });
           }
           return _results1;
-        })());
+        }).call(this));
       }
       return _results;
     }).call(this);
-  }).property('barData.@each', 'ungroupedSeriesName'),
-  barGroups: Ember.computed(function() {
-    var barData, barGroups, groupName, values, _results,
+  }).property('barData.@each', 'ungroupedSeriesName', 'barLeftOffset'),
+  _transformCenter: function(time) {
+    var delta, offset;
+    delta = this._getTimeDeltaFromSelectedInterval();
+    offset = this.get('barLeftOffset');
+    if (offset !== 0) {
+      time = this._padTimeWithIntervalMultiplier(time, delta, offset);
+    }
+    return time;
+  },
+  _getTimeDeltaFromSelectedInterval: function() {
+    switch (this.get('selectedInterval')) {
+      case 'years':
+      case 'Y':
+        return 'year';
+      case 'quarters':
+      case 'Q':
+        return 'quarter';
+      case 'months':
+      case 'M':
+        return 'month';
+      case 'weeks':
+      case 'W':
+        return 'week';
+      case 'seconds':
+      case 'S':
+        return 'second';
+    }
+  },
+  _padTimeForward: function(time, delta) {
+    return this._padTimeWithIntervalMultiplier(time, delta, 0.5);
+  },
+  _padTimeBackward: function(time, delta) {
+    return this._padTimeWithIntervalMultiplier(time, delta, -0.5);
+  },
+  _padTimeWithIntervalMultiplier: function(time, delta, multiplier) {
+    var intervalType, offsetDelta, period;
+    if (time != null) {
+      intervalType = delta === 'quarter' ? 'month' : delta;
+      period = delta === 'quarter' ? 3 : 1;
+      offsetDelta = d3.time[intervalType].offset(time, period) - time.getTime();
+      time = offsetDelta * multiplier + time.getTime();
+    }
+    return new Date(time);
+  },
+  _barGroups: Ember.computed(function() {
+    var barData, barGroups,
       _this = this;
     barData = this.get('barData');
     if (Ember.isEmpty(barData)) {
       return [];
     }
-    barGroups = Ember.Charts.Helpers.groupBy(barData, function(d) {
-      var _ref;
-      return (_ref = d.label) != null ? _ref : _this.get('ungroupedSeriesName');
+    barGroups = Ember.Charts.Helpers.groupBy(barData, function(datum) {
+      return _this._getLabelOrDefault(datum);
     });
-    _results = [];
-    for (groupName in barGroups) {
-      values = barGroups[groupName];
-      _results.push(groupName);
-    }
-    return _results;
+    return _.keys(barGroups);
   }).property('barData.@each', 'ungroupedSeriesName'),
-  stackedBarData: Ember.computed(function() {
-    var barData, barGroupsByTime, barTimes, d, g, groupName, groups, stackedValues, time, timePoint, value, y0, _i, _len, _results;
-    barData = this.get('barData');
-    if (Ember.isEmpty(barData)) {
-      return [];
-    }
-    barTimes = Ember.Charts.Helpers.groupBy(barData, function(d) {
-      return +d.time;
-    });
-    barGroupsByTime = (function() {
-      var _results,
-        _this = this;
-      _results = [];
-      for (timePoint in barTimes) {
-        groups = barTimes[timePoint];
-        _results.push(Ember.Charts.Helpers.groupBy(groups, function(d) {
-          var _ref;
-          return (_ref = d.label) != null ? _ref : _this.get('ungroupedSeriesName');
-        }));
-      }
-      return _results;
-    }).call(this);
-    _results = [];
-    for (_i = 0, _len = barGroupsByTime.length; _i < _len; _i++) {
-      g = barGroupsByTime[_i];
-      y0 = 0;
-      stackedValues = (function() {
-        var _ref, _ref1, _results1;
-        _results1 = [];
-        for (groupName in g) {
-          d = g[groupName];
-          time = d != null ? (_ref = d[0]) != null ? _ref.time : void 0 : void 0;
-          value = d != null ? (_ref1 = d[0]) != null ? _ref1.value : void 0 : void 0;
-          _results1.push({
-            group: groupName,
-            x: time,
-            y0: y0,
-            y1: y0 += Math.max(value, 0)
-          });
-        }
-        return _results1;
-      })();
-      _results.push({
-        stackedValues: stackedValues,
-        totalValue: y0
-      });
-    }
-    return _results;
-  }).property('barData', 'ungroupedSeriesName'),
-  finishedData: Ember.computed(function() {
-    return {
-      lineData: this.get('groupedLineData'),
-      groupedBarData: this.get('groupedBarData'),
-      stackedBarData: this.get('stackedBarData')
-    };
-  }).property('groupedLineData.@each.values', 'groupedBarData.@each', 'stackedBarData.@each'),
-  hasNoData: Ember.computed(function() {
-    return !(this.get('hasBarData') || this.get('hasLineData'));
-  }).property('hasBarData', 'hasLineData'),
-  hasLineData: Ember.computed(function() {
-    return !Ember.isEmpty(this.get('lineData'));
-  }).property('lineData'),
-  hasBarData: Ember.computed(function() {
-    return !Ember.isEmpty(this.get('barData'));
-  }).property('barData'),
-  legendChartPadding: Ember.computed.alias('labelHeightOffset'),
+  _hasLineData: Ember.computed.notEmpty('lineData'),
+  _hasBarData: Ember.computed.notEmpty('barData'),
   graphicLeft: Ember.computed.alias('labelWidthOffset'),
   graphicWidth: Ember.computed(function() {
     return this.get('width') - this.get('labelWidthOffset');
@@ -2835,14 +2862,15 @@ Ember.Charts.TimeSeriesComponent = Ember.Charts.ChartComponent.extend(Ember.Char
     return this.get('height') - this.get('legendHeight') - this.get('legendChartPadding');
   }).property('height', 'legendHeight', 'legendChartPadding'),
   timeDelta: Ember.computed(function() {
-    var diffTimeDays, endTime, groupedBarData, startTime;
-    groupedBarData = this.get('groupedBarData');
+    var diffTimeDays, firstBarTime, groupedBarData, oneDayInSeconds, secondBarTime;
+    groupedBarData = this.get('_groupedBarData');
     if (Ember.isEmpty(groupedBarData) || groupedBarData.get('length') < 2) {
       return 'month';
     }
-    startTime = groupedBarData[0][0].time;
-    endTime = groupedBarData[1][0].time;
-    diffTimeDays = (endTime - startTime) / (24 * 60 * 60 * 1000);
+    firstBarTime = groupedBarData[0][0].time;
+    secondBarTime = groupedBarData[1][0].time;
+    oneDayInSeconds = 24 * 60 * 60 * 1000;
+    diffTimeDays = (secondBarTime - firstBarTime) / oneDayInSeconds;
     if (diffTimeDays > 351) {
       return 'year';
     } else if (diffTimeDays > 33) {
@@ -2854,35 +2882,26 @@ Ember.Charts.TimeSeriesComponent = Ember.Charts.ChartComponent.extend(Ember.Char
     } else {
       return 'day';
     }
-  }).property('groupedBarData'),
+  }).property('_groupedBarData'),
   barDataExtent: Ember.computed(function() {
-    var endTime, endTimeGroup, groupedBarData, paddedEnd, paddedStart, startTime, startTimeGroup, timeDelta;
+    var endTime, first, groupedBarData, last, paddedEnd, paddedStart, startTime, timeDelta;
     timeDelta = this.get('timeDelta');
-    groupedBarData = this.get('groupedBarData');
+    groupedBarData = this.get('_groupedBarData');
     if (Ember.isEmpty(groupedBarData)) {
       return [new Date(), new Date()];
     }
-    startTimeGroup = groupedBarData[0];
-    startTime = startTimeGroup[0].time;
-    endTimeGroup = groupedBarData[groupedBarData.length - 1];
-    endTime = endTimeGroup[0].time;
-    paddedStart = timeDelta === 'quarter' ? +startTime / 2 + d3.time['month'].offset(startTime, -3) / 2 : +startTime / 2 + d3.time[timeDelta].offset(startTime, -1) / 2;
-    paddedEnd = timeDelta === 'quarter' ? +endTime / 2 + d3.time['month'].offset(endTime, 3) / 2 : +endTime / 2 + d3.time[timeDelta].offset(endTime, 1) / 2;
+    first = _.first(groupedBarData);
+    last = _.last(groupedBarData);
+    startTime = new Date(first[0].time);
+    endTime = new Date(last[0].time);
+    paddedStart = this._padTimeBackward(startTime, timeDelta);
+    paddedEnd = this._padTimeForward(endTime, timeDelta);
     return [new Date(paddedStart), new Date(paddedEnd)];
-  }).property('timeDelta', 'groupedBarData.@each'),
-  individualBarLabels: Ember.computed.alias('barGroups'),
+  }).property('timeDelta', '_groupedBarData.@each'),
   xBetweenGroupDomain: Ember.computed.alias('barDataExtent'),
-  xWithinGroupDomain: Ember.computed.alias('individualBarLabels'),
+  xWithinGroupDomain: Ember.computed.alias('_barGroups'),
   barWidth: Ember.computed(function() {
     return this.get('xGroupScale').rangeBand();
-  }).property('xGroupScale'),
-  stackWidth: Ember.computed(function() {
-    return this.get('paddedStackWidth') * (1 - this.get('barGroupPadding'));
-  }).property('paddedStackWidth', 'barGroupPadding'),
-  paddedStackWidth: Ember.computed(function() {
-    var end, start, _ref;
-    _ref = this.get('xGroupScale').rangeExtent(), start = _ref[0], end = _ref[1];
-    return end - start;
   }).property('xGroupScale'),
   paddedGroupWidth: Ember.computed(function() {
     var scale, t1, t2, timeDelta;
@@ -2894,17 +2913,17 @@ Ember.Charts.TimeSeriesComponent = Ember.Charts.ChartComponent.extend(Ember.Char
   }).property('timeDelta', 'xTimeScale', 'xBetweenGroupDomain'),
   lineSeriesNames: Ember.computed(function() {
     var data;
-    data = this.get('groupedLineData');
+    data = this.get('_groupedLineData');
     if (Ember.isEmpty(data)) {
       return [];
     }
     return data.map(function(d) {
       return d.group;
     });
-  }).property('groupedLineData'),
+  }).property('_groupedLineData'),
   lineDataExtent: Ember.computed(function() {
     var data, extents;
-    data = this.get('groupedLineData');
+    data = this.get('_groupedLineData');
     if (Ember.isEmpty(data)) {
       return [new Date(), new Date()];
     }
@@ -2920,27 +2939,26 @@ Ember.Charts.TimeSeriesComponent = Ember.Charts.ChartComponent.extend(Ember.Char
         return e[1];
       })
     ];
-  }).property('groupedLineData.@each.values'),
+  }).property('_groupedLineData.@each.values'),
   xBetweenSeriesDomain: Ember.computed.alias('lineSeriesNames'),
   xWithinSeriesDomain: Ember.computed.alias('lineDataExtent'),
   maxNumberOfLabels: Ember.computed.alias('numXTicks'),
   xDomain: Ember.computed(function() {
     var maxOfGroups, maxOfSeries, minOfGroups, minOfSeries, _ref, _ref1;
-    if (!this.get('hasBarData')) {
+    if (!this.get('_hasBarData')) {
       return this.get('xWithinSeriesDomain');
     }
-    if (!this.get('hasLineData')) {
+    if (!this.get('_hasLineData')) {
       return this.get('xBetweenGroupDomain');
     }
     _ref = this.get('xBetweenGroupDomain'), minOfGroups = _ref[0], maxOfGroups = _ref[1];
     _ref1 = this.get('xWithinSeriesDomain'), minOfSeries = _ref1[0], maxOfSeries = _ref1[1];
     return [Math.min(minOfGroups, minOfSeries), Math.max(maxOfGroups, maxOfSeries)];
-  }).property('xBetweenGroupDomain', 'xWithinSeriesDomain', 'hasBarData', 'hasLineData'),
+  }).property('xBetweenGroupDomain', 'xWithinSeriesDomain', '_hasBarData', '_hasLineData'),
   yDomain: Ember.computed(function() {
-    var groupData, hasBarData, hasLineData, lineData, max, maxOfGroups, maxOfSeries, maxOfStacks, min, minOfGroups, minOfSeries, minOfStacks, stackBars, stackData;
-    lineData = this.get('groupedLineData');
-    stackData = this.get('stackedBarData');
-    groupData = this.get('groupedBarData');
+    var groupData, hasBarData, hasLineData, lineData, max, maxOfGroups, maxOfSeries, min, minOfGroups, minOfSeries;
+    lineData = this.get('_groupedLineData');
+    groupData = this.get('_groupedBarData');
     maxOfSeries = d3.max(lineData, function(d) {
       return d3.max(d.values, function(dd) {
         return dd.value;
@@ -2950,12 +2968,6 @@ Ember.Charts.TimeSeriesComponent = Ember.Charts.ChartComponent.extend(Ember.Char
       return d3.min(d.values, function(dd) {
         return dd.value;
       });
-    });
-    minOfStacks = d3.min(stackData, function(d) {
-      return d.totalValue;
-    });
-    maxOfStacks = d3.max(stackData, function(d) {
-      return d.totalValue;
     });
     maxOfGroups = d3.max(groupData, function(d) {
       return d3.max(d, function(dd) {
@@ -2967,23 +2979,19 @@ Ember.Charts.TimeSeriesComponent = Ember.Charts.ChartComponent.extend(Ember.Char
         return dd.value;
       });
     });
-    hasBarData = this.get('hasBarData');
-    hasLineData = this.get('hasLineData');
-    stackBars = this.get('stackBars');
+    hasBarData = this.get('_hasBarData');
+    hasLineData = this.get('_hasLineData');
     if (!hasBarData) {
       min = minOfSeries;
       max = maxOfSeries;
     } else if (!hasLineData) {
-      min = stackBars ? minOfStacks : minOfGroups;
-      max = stackBars ? maxOfStacks : maxOfGroups;
-    } else if (stackBars) {
-      min = Math.min(minOfSeries, minOfStacks);
-      max = Math.max(maxOfSeries, maxOfStacks);
+      min = minOfGroups;
+      max = maxOfGroups;
     } else {
       min = Math.min(minOfGroups, minOfSeries);
       max = Math.max(maxOfGroups, maxOfSeries);
     }
-    if (stackBars || this.get('yAxisFromZero') || min === max) {
+    if (this.get('yAxisFromZero') || min === max) {
       if (max < 0) {
         return [min, 0];
       }
@@ -2995,7 +3003,7 @@ Ember.Charts.TimeSeriesComponent = Ember.Charts.ChartComponent.extend(Ember.Char
       }
     }
     return [min, max];
-  }).property('groupedLineData', 'stackedBarData', 'groupedBarData', 'hasBarData', 'hasLineData', 'stackBars', 'yAxisFromZero'),
+  }).property('_groupedLineData', '_groupedBarData', '_hasBarData', '_hasLineData', 'yAxisFromZero'),
   yRange: Ember.computed(function() {
     return [this.get('graphicTop') + this.get('graphicHeight'), this.get('graphicTop')];
   }).property('graphicTop', 'graphicHeight'),
@@ -3013,19 +3021,30 @@ Ember.Charts.TimeSeriesComponent = Ember.Charts.ChartComponent.extend(Ember.Char
   xGroupScale: Ember.computed(function() {
     return d3.scale.ordinal().domain(this.get('xWithinGroupDomain')).rangeRoundBands([0, this.get('paddedGroupWidth')], this.get('barPadding') / 2, this.get('barGroupPadding') / 2);
   }).property('xWithinGroupDomain', 'paddedGroupWidth', 'barPadding', 'barGroupPadding'),
+  minAxisValue: Ember.computed(function() {
+    var yScale;
+    yScale = this.get('yScale');
+    return yScale.domain()[0];
+  }).property('yScale'),
+  maxAxisValue: Ember.computed(function() {
+    var yScale;
+    yScale = this.get('yScale');
+    return yScale.domain()[1];
+  }).property('yScale'),
   showDetails: Ember.computed(function() {
     var _this = this;
     if (!this.get('isInteractive')) {
       return Ember.K;
     }
     return function(data, i, element) {
-      var addValueLine, content, formatValue;
+      var addValueLine, content, formatLabel, time;
       d3.select(element).classed('hovered', true);
-      content = "<span class=\"tip-label\">" + (_this.get('formatTime')(data.time)) + "</span>";
-      formatValue = _this.get('formatValue');
+      time = data.labelTime != null ? data.labelTime : data.time;
+      content = "<span class=\"tip-label\">" + (_this.get('formatTime')(time)) + "</span>";
+      formatLabel = _this.get('formatLabel');
       addValueLine = function(d) {
         content += "<span class=\"name\">" + d.group + ": </span>";
-        return content += "<span class=\"value\">" + (formatValue(d.value)) + "</span><br/>";
+        return content += "<span class=\"value\">" + (formatLabel(d.value)) + "</span><br/>";
       };
       if (Ember.isArray(data.values)) {
         data.values.forEach(addValueLine);
@@ -3050,39 +3069,10 @@ Ember.Charts.TimeSeriesComponent = Ember.Charts.ChartComponent.extend(Ember.Char
     var _this = this;
     return {
       transform: function(d) {
-        var dx, dy;
-        if (_this.get('stackBars')) {
-          dx = -_this.get('stackWidth') / 2;
-        } else {
-          dx = -_this.get('paddedGroupWidth') / 2;
-        }
-        dy = 0;
-        return "translate(" + dx + "," + dy + ")";
+        return "translate(" + (-_this.get('paddedGroupWidth') / 2) + ",0)";
       }
     };
-  }).property('stackBars', 'stackWidth', 'paddedGroupWidth'),
-  stackedBarAttrs: Ember.computed(function() {
-    var xTimeScale, yScale,
-      _this = this;
-    xTimeScale = this.get('xTimeScale');
-    yScale = this.get('yScale');
-    return {
-      "class": function(d, i) {
-        return "grouping-" + i;
-      },
-      'stroke-width': 0,
-      width: this.get('stackWidth'),
-      x: function(d) {
-        return xTimeScale(d.x);
-      },
-      y: function(d) {
-        return yScale(d.y1) + _this.get('zeroDisplacement');
-      },
-      height: function(d) {
-        return yScale(d.y0) - yScale(d.y1);
-      }
-    };
-  }).property('xTimeScale', 'yScale', 'stackWidth', 'zeroDisplacement'),
+  }).property('paddedGroupWidth'),
   groupedBarAttrs: Ember.computed(function() {
     var xGroupScale, xTimeScale, yScale, zeroDisplacement,
       _this = this;
@@ -3112,7 +3102,7 @@ Ember.Charts.TimeSeriesComponent = Ember.Charts.ChartComponent.extend(Ember.Char
         return Math.max(0, d.value > zeroLine ? Math.abs(yScale(zeroLine) - yScale(d.value)) - zeroDisplacement : Math.abs(yScale(d.value) - yScale(zeroLine)) - zeroDisplacement);
       }
     };
-  }).property('xTimeScale', 'xGroupScale', 'barWidth', 'yScale', 'zeroDisplacement'),
+  }).property('xTimeScale', 'xGroupScale', 'barWidth', 'yScale', 'zeroDisplacement', 'barLeftOffset'),
   line: Ember.computed(function() {
     var _this = this;
     return d3.svg.line().x(function(d) {
@@ -3121,7 +3111,7 @@ Ember.Charts.TimeSeriesComponent = Ember.Charts.ChartComponent.extend(Ember.Char
       return _this.get('yScale')(d.value);
     }).interpolate(this.get('interpolate') ? 'basis' : 'linear');
   }).property('xTimeScale', 'yScale', 'interpolate'),
-  getLineColor: Ember.computed(function() {
+  lineColorFn: Ember.computed(function() {
     var _this = this;
     return function(d, i) {
       var getSeriesColor;
@@ -3156,7 +3146,7 @@ Ember.Charts.TimeSeriesComponent = Ember.Charts.ChartComponent.extend(Ember.Char
       d: function(d) {
         return line(d.values);
       },
-      stroke: this.get('getLineColor'),
+      stroke: this.get('lineColorFn'),
       'stroke-width': function(d, i) {
         switch (i) {
           case 0:
@@ -3242,19 +3232,13 @@ Ember.Charts.TimeSeriesComponent = Ember.Charts.ChartComponent.extend(Ember.Char
     return this.get('viewport').selectAll('.bars').remove();
   },
   groups: Ember.computed(function() {
-    var barData;
-    if (this.get('stackBars')) {
-      barData = this.get('stackedBarData');
-    } else {
-      barData = this.get('groupedBarData');
-    }
-    return this.get('viewport').selectAll('.bars').data(barData);
+    return this.get('viewport').selectAll('.bars').data(this.get('_groupedBarData'));
   }).volatile(),
   removeAllSeries: function() {
     return this.get('viewport').selectAll('.series').remove();
   },
   series: Ember.computed(function() {
-    return this.get('viewport').selectAll('.series').data(this.get('groupedLineData'));
+    return this.get('viewport').selectAll('.series').data(this.get('_groupedLineData'));
   }).volatile(),
   xAxis: Ember.computed(function() {
     var xAxis;
@@ -3274,9 +3258,8 @@ Ember.Charts.TimeSeriesComponent = Ember.Charts.ChartComponent.extend(Ember.Char
       return yAxis;
     }
   }).volatile(),
-  renderVars: ['getLabelledTicks', 'xGroupScale', 'xTimeScale', 'yScale'],
+  renderVars: ['barLeftOffset', 'labelledTicks', 'xGroupScale', 'xTimeScale', 'yScale'],
   drawChart: function() {
-    this.updateRule();
     this.updateBarData();
     this.updateLineData();
     this.updateLineMarkers();
@@ -3291,8 +3274,8 @@ Ember.Charts.TimeSeriesComponent = Ember.Charts.ChartComponent.extend(Ember.Char
   },
   updateAxes: function() {
     var gXAxis, gYAxis, graphicHeight, graphicLeft, graphicTop, xAxis, yAxis;
-    xAxis = d3.svg.axis().scale(this.get('xTimeScale')).orient('bottom').ticks(this.get('getLabelledTicks')).tickSubdivide(this.get('numberOfMinorTicks')).tickFormat(this.get('formattedTime')).tickSize(6, 3, 0);
-    yAxis = d3.svg.axis().scale(this.get('yScale')).orient('right').ticks(this.get('numYTicks')).tickSize(this.get('graphicWidth')).tickFormat(this.get('formatValue'));
+    xAxis = d3.svg.axis().scale(this.get('xTimeScale')).orient('bottom').tickValues(this.get('labelledTicks')).tickSubdivide(this.get('numberOfMinorTicks')).tickFormat(this.get('formattedTime')).tickSize(6, 3);
+    yAxis = d3.svg.axis().scale(this.get('yScale')).orient('right').ticks(this.get('numYTicks')).tickSize(this.get('graphicWidth')).tickFormat(this.get('formatValueAxis'));
     graphicTop = this.get('graphicTop');
     graphicHeight = this.get('graphicHeight');
     gXAxis = this.get('xAxis').attr({
@@ -3308,23 +3291,16 @@ Ember.Charts.TimeSeriesComponent = Ember.Charts.ChartComponent.extend(Ember.Char
     });
   },
   updateBarData: function() {
-    var bars, groups, hideDetails, showDetails, subdata;
+    var bars, groups, hideDetails, showDetails;
     this.removeAllGroups();
     groups = this.get('groups');
     showDetails = this.get('showDetails');
     hideDetails = this.get('hideDetails');
     groups.enter().insert('g', '.series').attr('class', 'bars');
     groups.exit().remove();
-    if (this.get('stackBars')) {
-      subdata = function(d) {
-        return d.stackedValues;
-      };
-    } else {
-      subdata = function(d) {
-        return d;
-      };
-    }
-    bars = groups.selectAll('rect').data(subdata);
+    bars = groups.selectAll('rect').data(function(d) {
+      return d;
+    });
     bars.enter().append('rect').on("mouseover", function(d, i) {
       return showDetails(d, i, this);
     }).on("mouseout", function(d, i) {
@@ -3333,15 +3309,10 @@ Ember.Charts.TimeSeriesComponent = Ember.Charts.ChartComponent.extend(Ember.Char
     return bars.exit().remove();
   },
   updateBarGraphic: function() {
-    var barAttrs, groups;
-    if (this.get('stackBars')) {
-      barAttrs = this.get('stackedBarAttrs');
-    } else {
-      barAttrs = this.get('groupedBarAttrs');
-    }
+    var groups;
     groups = this.get('groups');
     groups.attr(this.get('groupAttrs'));
-    return groups.selectAll('rect').style('fill', this.get('getSecondarySeriesColor')).attr(barAttrs);
+    return groups.selectAll('rect').style('fill', this.get('getSecondarySeriesColor')).attr(this.get('groupedBarAttrs'));
   },
   updateLineData: function() {
     var series;
@@ -3376,20 +3347,19 @@ Ember.Charts.BubbleComponent = Ember.Charts.ChartComponent.extend(Ember.Charts.F
       return -Math.pow(d.radius, 2.0) / 8;
     };
   }),
-  formatValue: d3.format('.2s'),
-  formatValueLong: d3.format(',.r'),
+  formatLabel: d3.format(',.2f'),
   showDetails: Ember.computed(function() {
     var _this = this;
     if (!this.get('isInteractive')) {
       return Ember.K;
     }
     return function(data, i, element) {
-      var content, formatValue;
+      var content, formatLabel;
       d3.select(element).classed('hovered', true);
-      formatValue = _this.get('formatValue');
+      formatLabel = _this.get('formatLabel');
       content = "<span class=\"tip-label\">" + data.label + "</span>";
       content += "<span class=\"name\">" + (_this.get('tooltipValueDisplayName')) + ": </span>";
-      content += "<span class=\"value\">" + (formatValue(data.value)) + "</span>";
+      content += "<span class=\"value\">" + (formatLabel(data.value)) + "</span>";
       return _this.showTooltip(content, d3.event);
     };
   }).property('isInteractive'),

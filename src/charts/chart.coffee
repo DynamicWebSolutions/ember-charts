@@ -84,7 +84,6 @@ Ember.Charts.ChartComponent = Ember.Component.extend(
     @get('graphicLeft') + @get('graphicWidth')
   .property 'graphicLeft', 'graphicWidth'
 
-
   # ----------------------------------------------------------------------------
   # Data
   # ----------------------------------------------------------------------------
@@ -110,6 +109,9 @@ Ember.Charts.ChartComponent = Ember.Component.extend(
     for renderVar in @get('renderVars').uniq()
       @addObserver renderVar, =>
         Ember.run.once this, @get('draw')
+      # This is just to ensure that observers added above fire even
+      # if that renderVar is not consumed elsewhere.
+      @get(renderVar)
 
   didInsertElement: ->
     @_super()
@@ -129,7 +131,7 @@ Ember.Charts.ChartComponent = Ember.Component.extend(
 
   # Remove previous drawing
   draw: ->
-    return unless @get('state') is 'inDOM'
+    return unless (@_state or @state) is "inDOM"
     if @get('hasNoData')
       @clearChart()
     else

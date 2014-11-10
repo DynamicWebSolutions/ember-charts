@@ -8,8 +8,11 @@ Ember.Charts.VerticalBarComponent = Ember.Charts.ChartComponent.extend(
   # ----------------------------------------------------------------------------
 
   # Getters for formatting human-readable labels from provided data
-  formatValue: d3.format('.2s')
-  formatValueLong: d3.format(',.r')
+  formatLabel: d3.format(',.2f')
+
+  # Sort key for the data. Defaults to none, can be set to "value" to sort by
+  # values. If data is grouped, sort by the first value in the group.
+  selectedSortType: 'none'
 
   # Data without group will be merged into a group with this name
   ungroupedSeriesName: 'Other'
@@ -48,11 +51,25 @@ Ember.Charts.VerticalBarComponent = Ember.Charts.ChartComponent.extend(
 
   # Aggregates objects provided in `data` in a dictionary, keyed by group names
   groupedData: Ember.computed ->
-    data = @get 'data'
+    data = @get 'sortedData'
     return [] if Ember.isEmpty data
     Ember.Charts.Helpers.groupBy data, (d) =>
       d.group ? @get('ungroupedSeriesName')
-  .property 'data.@each', 'ungroupedSeriesName'
+  .property 'sortedData', 'ungroupedSeriesName'
+
+  sortedData: Ember.computed ->
+    type = @get 'selectedSortType'
+    data = @get 'data'
+    # First sort the data if applicable
+    if type is 'value'
+      data = data.sort (a, b) ->
+        # Sort decending. In future, might be worth breaking this out into a
+        # configurable option
+        if a.value < b.value then 1
+        else if a.value > b.value then -1
+        else 0
+    data
+  .property 'selectedSortType', 'data.@each'
 
   groupNames: Ember.computed ->
     for groupName, values of @get('groupedData')
@@ -102,12 +119,12 @@ Ember.Charts.VerticalBarComponent = Ember.Charts.ChartComponent.extend(
       return [] if Ember.isEmpty @get('data')
       # If we have grouped data and do not have stackBars turned on, split the
       # data up so it gets drawn in separate groups and labeled
-      for d in @get('data')
+      for d in @get('sortedData')
         group: d.label
         values: [d]
   # TODO(tony): Need to have stacked bars as a dependency here and the
   # calculation be outside of this
-  .property 'groupedData', 'isGrouped', 'stackBars'
+  .property 'groupedData', 'isGrouped', 'stackBars', 'sortedData'
 
   # ----------------------------------------------------------------------------
   # Layout
@@ -232,6 +249,17 @@ Ember.Charts.VerticalBarComponent = Ember.Charts.ChartComponent.extend(
   .property('isGrouped', 'stackBars', 'graphicWidth', 'labelWidth',
     'xBetweenGroupDomain', 'betweenGroupPadding')
 
+  # Override axis mix-in min and max values to listen to the scale's domain
+  minAxisValue: Ember.computed ->
+    yScale = @get 'yScale'
+    yScale.domain()[0]
+  .property 'yScale'
+
+  maxAxisValue: Ember.computed ->
+    yScale = @get 'yScale'
+    yScale.domain()[1]
+  .property 'yScale'
+
   # ----------------------------------------------------------------------------
   # Color Configuration
   # ----------------------------------------------------------------------------
@@ -273,12 +301,15 @@ Ember.Charts.VerticalBarComponent = Ember.Charts.ChartComponent.extend(
       d3.select(element).classed('hovered', yes)
 
       # Show tooltip
-      content = "<span class=\"tip-label\">#{data.group}</span>"
+      if data.group
+        content = "<span class=\"tip-label\">#{data.group}</span>"
+      else
+        content = ''
 
-      formatValue = @get 'formatValue'
+      formatLabel = @get 'formatLabel'
       addValueLine = (d) ->
         content +="<span class=\"name\">#{d.label}: </span>"
-        content += "<span class=\"value\">#{formatValue(d.value)}</span><br/>"
+        content += "<span class=\"value\">#{formatLabel(d.value)}</span><br/>"
 
       if isGroup
         # Display all bar details if hovering over axis group label
@@ -492,7 +523,7 @@ Ember.Charts.VerticalBarComponent = Ember.Charts.ChartComponent.extend(
       .orient('right')
       .ticks(@get 'numYTicks')
       .tickSize(@get 'graphicWidth')
-      .tickFormat(@get 'formatValue')
+      .tickFormat(@get 'formatValueAxis')
 
     graphicTop = @get 'graphicTop'
     graphicLeft = @get 'graphicLeft'
