@@ -48,4 +48,4 @@ mixin = Ember.Mixin.create
       "#{prefix.scale(value)}#{prefix.symbol}"
   .property 'minAxisValue', 'maxAxisValue'
 
-`eport default mixin`  
+`export default mixin`  

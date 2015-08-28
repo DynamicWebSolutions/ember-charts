@@ -1,4 +1,4 @@
-`import Ember from 'ember`'
+`import Ember from 'ember'`
 
 mixin = Ember.Mixin.create
   sortKey: 'value'
