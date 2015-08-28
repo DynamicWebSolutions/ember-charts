@@ -4,13 +4,13 @@ App.EmberChartsBubbleController = App.SlideController.extend
   # Data Selection
   # ---------
 
-  availableDataSets: Ember.computed ->
+  availableDataSets: Ember.computed(->
     _.keys @get('rawDataHash')
-  .property 'rawDataHash'
+  ).property 'rawDataHash'
 
-  data: Ember.computed ->
+  data: Ember.computed(->
     @get('rawDataHash')[@get 'selectedData']
-  .property 'selectedData', 'rawDataHash'
+  ).property 'selectedData', 'rawDataHash'
 
   rawDataHash: Ember.computed ->
     many_values: App.data.many_values

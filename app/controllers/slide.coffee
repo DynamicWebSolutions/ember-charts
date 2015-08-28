@@ -1,8 +1,7 @@
-App.SlideController = Ember.Controller.extend
-  prettyPrintedData: Ember.computed ->
-    JSON.stringify(@get('data'), null, '\t')
-  .property 'data'
-
+App.SlideController = Ember.Controller.extend(
+  prettyPrintedData: Ember.computed(->
+    JSON.stringify @get('data'), null, '\t'
+  ).property('data')
   seedColors:
     purple: 'rgb(100,60,120)'
     yellow: 'rgb(250,165,30)'
@@ -13,16 +12,13 @@ App.SlideController = Ember.Controller.extend
     green: 'rgb(60,110,80)'
     gray: 'rgb(65,65,65)'
     black: 'rgb(00,00,00)'
-
-  seedColorNames: Ember.computed ->
+  seedColorNames: Ember.computed(->
     _.keys @get('seedColors')
-  .property 'seedColors'
-
+  ).property('seedColors')
   selectedSeedColorName: 'black'
-
-  selectedSeedColor: Ember.computed ->
-    @get('seedColors')[@get 'selectedSeedColorName']
-  .property 'selectedSeedColorName', 'seedColors.@each'
+  selectedSeedColor: Ember.computed(->
+    @get('seedColors')[@get('selectedSeedColorName')]
+  ).property('selectedSeedColorName', 'seedColors.@each')) 
 
 App.ScrubberComponent = Ember.Component.extend
   tagName: 'input'

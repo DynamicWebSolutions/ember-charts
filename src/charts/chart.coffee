@@ -118,7 +118,7 @@ Ember.Charts.ChartComponent = Ember.Component.extend(
 
   didInsertElement: ->
     @_super()
-    @_updateDimensions()
+    Ember.run.schedule 'afterRender', this, @_updateDimensions
     @drawOnce()
 
   drawOnce: ->

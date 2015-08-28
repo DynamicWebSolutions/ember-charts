@@ -26,11 +26,13 @@
         <div class="form-group">
           <label class="col-lg-4 control-label">Line Data</label>
           <div class="col-lg-8">
-            {{view Ember.Select
-             contentBinding="availableLineDataSets"
-             valueBinding="selectedLineData"
-             class="form-control"
-            }}
+            <select class="form-control" {{action 'change' on='change'}}>
+              {{#each availableLineDataSets key="@index" as |item|}}
+                <option value="{{item}}" selected="{{is-equal item selectedLineData}}">
+                  {{item}}
+                </option>
+              {{/each}}
+            </select>
           </div>
         </div>
         <div class="form-group">
