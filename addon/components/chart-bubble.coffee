@@ -1,10 +1,11 @@
 `import Ember from 'ember'`
-`import Base from './charts-base'`
-`import FloatingToolTip from '../mixins/floatingTool-tip'`
+`import ChartBaseComponent from './chart-base'`
+`import ToolTip from '../mixins/charts-tooltip'`
 
-component = Base.extend(
-  FloatingToolTip,
-  classNames: ['chart-bubble']
+
+ChartBubbleComponent = ChartBaseComponent.extend(
+	ToolTip,
+	classNames: ['chart-bubble']
 
   # ----------------------------------------------------------------------------
   # Bubble Chart Options
@@ -150,8 +151,7 @@ component = Base.extend(
           .attr("cy", (d) -> d.y)
     force.start()
 
-    vis.selectAll(".years").remove()
-
+    vis.selectAll(".years").remove()	
 )
 
-`export default component`
+`export default ChartBubbleComponent`

@@ -1,12 +1,13 @@
 `import Ember from 'ember'`
 `import Colorable from '../mixins/charts-colorable'`
-`import ResizeHandler from '../mixins/charts-resizehandler'`
+`import ResizeHandler from '../mixins/charts-resize'`
+`import layout from '../templates/components/chart-base'`
 
-
-component = Ember.Component.extend(
-  Colorable, ResizeHandler,
-  layoutName: 'chart'
-  classNames: ['chart-frame', 'scroll-y']
+ChartBaseComponent = Ember.Component.extend(
+	Colorable,
+	ResizeHandler,
+  layout: layout,
+	classNames: ['chart-frame', 'scroll-y']
   isInteractive: yes
 
   # ----------------------------------------------------------------------------
@@ -146,8 +147,7 @@ component = Ember.Component.extend(
     if @get('hasNoData')
       @clearChart()
     else
-      @drawChart()
-
+      @drawChart()  
 )
 
-`export default component`
+`export default ChartBaseComponent`

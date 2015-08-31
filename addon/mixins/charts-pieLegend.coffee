@@ -1,7 +1,7 @@
 `import Ember from 'ember'`
 
-mixin = Ember.Mixin.create
-
+ChartsPielegendMixin = Ember.Mixin.create(
+	
   # ----------------------------------------------------------------------------
   # Legend settings
   # ----------------------------------------------------------------------------
@@ -132,5 +132,6 @@ mixin = Ember.Mixin.create
 
     # Align the lowermost row of the block of labels against the bottom margin
     labels.attr('transform', "translate(0, #{-labelTop})")
+)
 
-`export default mixin`    
+`export default ChartsPielegendMixin`

@@ -1,13 +1,15 @@
 `import Ember from 'ember'`
-`import Base from './chart-base'`
-`import ToolTip from '../mixins/charts-format'`
+`import ChartBaseComponent from './chart-base'`
+`import ToolTip from '../mixins/charts-tooltip'`
 `import Formattable from '../mixins/charts-format'`
-`import Sortable from '../mixins/charts-sort'`
-`import PieLegend from '../mixins/chart-pieLegend'`
+`import Sortable from '../mixins/charts-sortable'`
+`import PieLegend from '../mixins/chart-pielegend'`
 
-component = Base.extend(
-  PieLegend, Tooltip, Formattable, Sortable,
-
+ChartPieComponent = ChartBaseComponent.extend(
+	ToolTip,
+	Formattable,
+	Sortable,
+	PieLegend,
   classNames: ['chart-pie']
   # ----------------------------------------------------------------------------
   # Pie Chart Options
@@ -404,7 +406,7 @@ component = Base.extend(
       .text((d) -> d.data.label)
       .attr(@get 'labelAttrs')
       .call(labelTrimmer.get 'trim')
-      .text((d) -> "#{this.textContent}, #{d.data.percent}%")
+      .text((d) -> "#{this.textContent}, #{d.data.percent}%")	
 )
 
-`export default component`
+`export default ChartPieComponent`

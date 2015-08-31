@@ -1,7 +1,7 @@
 `import Ember from 'ember'`
 
-mixin = Ember.Mixin.create
-  # ------------------------------------------------------------------------
+ChartsAxesMixin = Ember.Mixin.create(
+	# ------------------------------------------------------------------------
   # API -- Inputs
   #
   # graphicWidth (req.): The width of the graphic to be given axes
@@ -47,5 +47,6 @@ mixin = Ember.Mixin.create
     formatter = (value) ->
       "#{prefix.scale(value)}#{prefix.symbol}"
   .property 'minAxisValue', 'maxAxisValue'
+)
 
-`export default mixin`  
+`export default ChartsAxesMixin`

@@ -1,14 +1,19 @@
 `import Ember from 'ember'`
-`import Base from './chart-base'`
-`import ToolTip from '../mixins/charts-format'`
+`import ChartBaseComponent from './chart-base'`
+`import ToolTip from '../mixins/charts-tooltip'`
 `import Formattable from '../mixins/charts-format'`
 `import Legend from '../mixins/charts-legend'`
-`import TimeSeriesLabeler from '../mixins/charts-timeSeriesLabeler'`
-`import HasTimeSeriesRule from '../mixins/charts-hasTimeSeriesRule'`
+`import TimeSeriesLabeler from '../mixins/charts-timeserieslabeler'`
+`import HasTimeSeriesRule from '../mixins/charts-hastimeseriesrule'`
 `import Axes from '../mixins/charts-axes'`
 
-component = Base.extend(
-  Legend, Tooltip, Axes, Formattable, Sortable,
+ChartVerticalbarComponent = ChartBaseComponent.extend(
+	ToolTip,
+	Formattable,
+	Legend,
+	TimeSeriesLabeler,
+	HasTimeSeriesRule,
+	Axes,
   classNames: ['chart-vertical-bar']
 
   # ----------------------------------------------------------------------------
@@ -541,7 +546,7 @@ component = Base.extend(
       .style('fill', @get('getSeriesColor'))
       .attr(barAttrs)
     groups.select('g.groupLabel')
-      .attr(@get 'labelAttrs')
+      .attr(@get 'labelAttrs')	
 )
 
-`export default component`
+`export default ChartVerticalbarComponent`

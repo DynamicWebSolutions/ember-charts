@@ -2,7 +2,7 @@
 
 # Creates time series labels that are spaced reasonably.
 # Provides @formattedTime. Depends on @xDomain and @selectedInterval.
-mixin = Ember.Mixin.create
+ChartsTimeserieslabelerMixin = Ember.Mixin.create(
 
   # When set to true, ticks are drawn in the middle of an interval. By default,
   # they are drawn at the start of an interval.
@@ -175,5 +175,6 @@ mixin = Ember.Mixin.create
       when 'seconds' , 'S' then d3.time.format('%M : %S')
       else d3.time.format('%Y')
   .property 'selectedInterval'
+)
 
-`export default mixin`  
+`export default ChartsTimeserieslabelerMixin`

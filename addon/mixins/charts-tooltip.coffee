@@ -1,7 +1,7 @@
 `import Ember from 'ember'`
 
-mixin = Ember.Mixin.create
-  # ----------------------------------------------------------------------------
+ChartsTooltipMixin = Ember.Mixin.create(
+	# ----------------------------------------------------------------------------
   # API -- inputs
   #
   # elementId: the id of the object we're attaching the tooltip to
@@ -88,4 +88,6 @@ mixin = Ember.Mixin.create
     @_super()
     @_getTooltip().remove()
 
-`export default mixin`    
+)
+
+`export default ChartsTooltipMixin`

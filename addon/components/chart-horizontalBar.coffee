@@ -1,12 +1,14 @@
 `import Ember from 'ember'`
-`import Base from './chart-base'`
-`import ToolTip from '../mixins/charts-format'`
+`import ChartBaseComponent from './chart-base'`
+`import ToolTip from '../mixins/charts-tooltip'`
 `import Formattable from '../mixins/charts-format'`
-`import Sortable from '../mixins/charts-sort'`
+`import Sortable from '../mixins/charts-sortable'`
 
-component = Base.extend(
-  Tooltip, Formattable, Sortable,
-  classNames: ['chart-horizontal-bar']
+ChartHorizontalbarComponent = ChartBaseComponent.extend(
+	ToolTip,
+	Formattable,
+	Sortable,
+	classNames: ['chart-horizontal-bar']
 
   # ----------------------------------------------------------------------------
   # Horizontal Bar Chart Options
@@ -268,7 +270,7 @@ component = Base.extend(
     groups.select('text.group')
       .text((d) => d.label)
       .attr(@get 'groupLabelAttrs')
-      .call(labelTrimmer.get 'trim')
+      .call(labelTrimmer.get 'trim')				
 )
 
-`export default component`
+`export default ChartHorizontalbarComponent`

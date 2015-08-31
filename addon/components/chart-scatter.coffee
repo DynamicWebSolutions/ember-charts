@@ -1,13 +1,13 @@
 `import Ember from 'ember'`
-`import Base from './chart-base'`
-`import ToolTip from '../mixins/charts-format'`
+`import ChartBaseComponent from './chart-base'`
+`import ToolTip from '../mixins/charts-tooltip'`
 `import Legend from '../mixins/charts-legend'`
 `import Axes from '../mixins/charts-axes'`
 
-
-component = Base.extend(
-  Legend, Tooltip, Axes,
-
+ChartScatterComponent = ChartBaseComponent.extend(
+	ToolTip,
+	Legend,
+	Axes,
   classNames: ['chart-scatter']
 
   # ----------------------------------------------------------------------------
@@ -485,7 +485,7 @@ component = Base.extend(
         transform: (d) =>
           dx = @get('xScale') d.xValue
           dy = @get('yScale') d.yValue
-          "translate(#{dx}, #{dy})"
+          "translate(#{dx}, #{dy})"	
 )
 
-Ember.Handlebars.helper('scatter-chart', Ember.Charts.ScatterComponent)
+`export default ChartScatterComponent`

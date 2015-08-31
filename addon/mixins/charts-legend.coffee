@@ -1,8 +1,7 @@
 `import Ember from 'ember'`
 
-mixin = Ember.Mixin.create
-
-  # ----------------------------------------------------------------------------
+ChartsLegendMixin = Ember.Mixin.create(
+	# ----------------------------------------------------------------------------
   # Legend settings
   # ----------------------------------------------------------------------------
 
@@ -221,5 +220,6 @@ mixin = Ember.Mixin.create
       .text((d) -> d.label)
       .attr(@get 'legendLabelAttrs')
       .call(labelTrimmer.get 'trim')
+)
 
-`export default mixin`      
+`export default ChartsLegendMixin`

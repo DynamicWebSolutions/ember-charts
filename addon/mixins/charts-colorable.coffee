@@ -1,6 +1,6 @@
 `import Ember from 'ember'`
 
-mixin = Ember.Mixin.create
+ChartsColorableMixin = Ember.Mixin.create(
 
   selectedSeedColor: 'rgb(65, 65, 65)'
 
@@ -99,5 +99,6 @@ mixin = Ember.Mixin.create
         @get('secondaryColorScale') i / (numSecondaryColorSeries - 1)
   .property('numSecondaryColorSeries', 'secondaryColorRange',
     'secondaryColorScale')
+)
 
-`export default mixin`
+`export default ChartsColorableMixin`

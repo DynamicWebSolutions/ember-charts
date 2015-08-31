@@ -1,6 +1,6 @@
 `import Ember from 'ember'`
 
-mixin = Ember.Mixin.create
+ChartsSortableMixin = Ember.Mixin.create(
   sortKey: 'value'
 
   sortedData: Ember.computed ->
@@ -8,5 +8,6 @@ mixin = Ember.Mixin.create
     key = @get 'sortKey'
     if Ember.isEmpty(data) then [] else data.sortBy key
   .property 'data.@each', 'sortKey'
+)
 
-`export default mixin`  
+`export default ChartsSortableMixin`

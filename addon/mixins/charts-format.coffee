@@ -1,6 +1,6 @@
 `import Ember from 'ember'`
 
-mixin = Ember.Mixin.create(
+ChartsFormatMixin = Ember.Mixin.create(
   # Getters for formatting human-readable labels from provided data  
   formatLabelFunction: Ember.computed(->
     d3.format ',' + @get('formatLabel')
@@ -9,5 +9,6 @@ mixin = Ember.Mixin.create(
   # More info about d3.format: https://github.com/mbostock/d3/wiki/Formatting
     
   formatLabel: '.2f')
+)
 
-`export default mixin`  
+`export default ChartsFormatMixin`
