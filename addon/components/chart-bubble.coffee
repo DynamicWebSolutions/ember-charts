@@ -5,7 +5,7 @@
 
 ChartBubbleComponent = ChartBaseComponent.extend(
 	ToolTip,
-	classNames: ['chart-bubble']
+  classNames: ['chart-bubble']
 
   # ----------------------------------------------------------------------------
   # Bubble Chart Options

@@ -4,10 +4,10 @@
 `import layout from '../templates/components/chart-base'`
 
 ChartBaseComponent = Ember.Component.extend(
-	Colorable,
-	ResizeHandler,
-  layout: layout,
-	classNames: ['chart-frame', 'scroll-y']
+  Colorable,
+  ResizeHandler,
+  layout: layout
+  classNames: ['chart-frame', 'scroll-y']
   isInteractive: yes
 
   # ----------------------------------------------------------------------------

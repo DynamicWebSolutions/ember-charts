@@ -9,7 +9,7 @@ module.exports = {
   //   };
   // }
 
-  // afterInstall: function(options) {
-  //   // Perform extra work here.
-  // }
+  afterInstall: function(options) {
+    return this.addBowerPackageToProject('d3'); 
+  }
 };

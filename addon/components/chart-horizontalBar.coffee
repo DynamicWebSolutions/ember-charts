@@ -8,7 +8,7 @@ ChartHorizontalbarComponent = ChartBaseComponent.extend(
 	ToolTip,
 	Formattable,
 	Sortable,
-	classNames: ['chart-horizontal-bar']
+  classNames: ['chart-horizontal-bar']
 
   # ----------------------------------------------------------------------------
   # Horizontal Bar Chart Options

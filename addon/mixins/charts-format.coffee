@@ -8,7 +8,7 @@ ChartsFormatMixin = Ember.Mixin.create(
 	# String that will be used to format label using d3.format function
   # More info about d3.format: https://github.com/mbostock/d3/wiki/Formatting
     
-  formatLabel: '.2f')
+  formatLabel: '.2f'
 )
 
 `export default ChartsFormatMixin`

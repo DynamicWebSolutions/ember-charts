@@ -5,7 +5,7 @@
 
   <div class="example-container">
     <div class="chart-container">
-      {{vertical-bar-chart
+      {{!vertical-bar-chart
         maxBarThickness=maxBarThickness
         selectedSeedColor=selectedSeedColor
         data=data
@@ -14,6 +14,15 @@
         betweenGroupPadding=betweenGroupPadding
         stackBars=stackBars
       }}
+      {{chart-verticalbar
+        maxBarThickness=maxBarThickness
+        selectedSeedColor=selectedSeedColor
+        data=data
+        maxLabelHeight=maxLabelHeight
+        withinGroupPadding=withinGroupPadding
+        betweenGroupPadding=betweenGroupPadding
+        stackBars=stackBars
+      }}      
     </div>
   </div>
 
