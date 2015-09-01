@@ -1,15 +1,15 @@
 `import Ember from 'ember'`
 `import SlideController from './slide'`
 
-ScatterController = SlideController.extend
+ScatterController = SlideController.extend(
 
   # ---------
   # Data Selection
   # ---------
 
-  availableDataSets: Ember.computed ->
-    _.keys @get('rawDataHash')
-  .property 'rawDataHash'
+  availableDataSets: Ember.computed(->
+    _.keys @get 'rawDataHash' 
+  ).property('rawDataHash')
 
   data: Ember.computed ->
     @get('rawDataHash')[@get 'selectedData']
@@ -44,5 +44,6 @@ ScatterController = SlideController.extend
     ungroupedZeroes: App.data.ungroupedZeroes
 
   dotRadius: 7
+)
 
 `export default ScatterController`

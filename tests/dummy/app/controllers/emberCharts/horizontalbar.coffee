@@ -1,4 +1,5 @@
 `import Ember from 'ember'`
+`import SlideController from './slide'`
 
 HorizontalBarController = SlideController.extend
 
@@ -36,3 +37,5 @@ HorizontalBarController = SlideController.extend
     sum_to_zero: App.data.sum_to_zero
     bad_range: App.data.bad_range
   selectedData: 'asset_values'
+
+`export default HorizontalBarController`   

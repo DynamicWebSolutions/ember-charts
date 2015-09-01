@@ -108,16 +108,21 @@ ChartBaseComponent = Ember.Component.extend(
   # magic of concatenatedProperties any class that overrides the variable
   # renderVars will actually just be appending names to the list
   renderVars: ['finishedData', 'width', 'height', 'margin', 'isInteractive']
+
+  uniqRenderVars: Ember.computed ->
+    Ember.A(@get('renderVars')).uniq() 
+  .property 'renderVars' 
+
   init: ->
     @_super()
-    for renderVar in @get('renderVars').uniq()
+    for renderVar in @get('uniqRenderVars')
       @addObserver renderVar, @drawOnce
       # This is just to ensure that observers added above fire even
       # if that renderVar is not consumed elsewhere.
       @get(renderVar)
 
   willDestroyElement: ->
-    for renderVar in @get('renderVars').uniq()
+    for renderVar in @get('uniqRenderVars')
       @removeObserver renderVar, this, @drawOnce
 
     @_super()

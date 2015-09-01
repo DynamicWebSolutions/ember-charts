@@ -1,4 +1,5 @@
 `import Ember from 'ember'`
+`import SlideController from './slide'`
 
 BubbleController = SlideController.extend
 

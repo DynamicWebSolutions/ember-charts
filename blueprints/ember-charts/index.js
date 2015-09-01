@@ -10,6 +10,9 @@ module.exports = {
   // }
 
   afterInstall: function(options) {
-    return this.addBowerPackageToProject('d3'); 
+    return this.addBowerPackageToProject([
+      {name: 'd3', target: '~3.5.6'},
+      {name: 'lodash', target: '~3.10.1'}      
+    ]); 
   }
 };
