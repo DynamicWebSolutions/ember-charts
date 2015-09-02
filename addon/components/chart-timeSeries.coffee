@@ -110,13 +110,14 @@ ChartTimeseriesComponent = ChartBaseComponent.extend(
 
     # returns map from time to array of bar hashes
     barTimes = @groupBy barData, (d) -> d.time.getTime()
-    barGroupsByTime = for timePoint, groups of barTimes
+    Ember.A(for timePoint, groups of barTimes
       for g in groups
         label = @_getLabelOrDefault(g)
         labelTime = g.time
         drawTime = @_transformCenter(g.time)
         group: label, time: drawTime, value: g.value, label: label, \
           labelTime: labelTime
+    )
   .property 'barData.@each', 'ungroupedSeriesName', 'barLeftOffset'
 
   # Transforms the center of the bar graph for the drawing based on the

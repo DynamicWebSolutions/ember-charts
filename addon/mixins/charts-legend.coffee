@@ -1,6 +1,8 @@
 `import Ember from 'ember'`
+`import Helpers from './charts-helpers'`
 
 ChartsLegendMixin = Ember.Mixin.create(
+  Helpers,
 	# ----------------------------------------------------------------------------
   # Legend settings
   # ----------------------------------------------------------------------------
@@ -211,7 +213,7 @@ ChartsLegendMixin = Ember.Mixin.create(
           .attr(legendIconAttrs)
 
     legendLabelWidth = @get 'legendLabelWidth'
-    labelTrimmer = Ember.Charts.Helpers.LabelTrimmer.create
+    labelTrimmer = @LabelTrimmer.create
       getLabelSize: (d) -> legendLabelWidth
       getLabelText: (d) -> d.label
 

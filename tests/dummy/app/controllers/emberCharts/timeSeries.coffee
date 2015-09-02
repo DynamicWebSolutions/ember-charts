@@ -38,7 +38,12 @@ TimesSeriesController = SlideController.extend
   .property 'selectedLineData', 'lineDataHash'
 
   barData: Ember.computed ->
-    @get('barDataHash')[@get 'selectedBarData']
+    data = @get('barDataHash.'+[@get 'selectedBarData']+'.content')
+    Ember.A(data.toArray().map (datum) ->
+      {
+        time: datum._data.time
+        value: datum._data.value
+      })    
   .property 'selectedBarData', 'barDataHash'
 
   lineDataHash: Ember.computed ->
