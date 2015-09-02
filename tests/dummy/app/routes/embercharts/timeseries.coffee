@@ -6,8 +6,4 @@ timeSeriesRoute = Ember.Route.extend
 		Ember.RSVP.hash 
 			dailyCurrValue: @store.findAll('timeseries.dailycurrvalue')
 
-
-	# setupController: (controller, model) ->
-	# 	controller.set('model', model)
-
 `export default timeSeriesRoute`		
