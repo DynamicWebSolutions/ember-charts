@@ -65,8 +65,8 @@ ChartTimeseriesComponent = ChartBaseComponent.extend(
     lineData: @get('_groupedLineData')
     groupedBarData: @get('_groupedBarData')
   .property(
-    '_groupedLineData.@each.values',
-    '_groupedBarData.@each')
+    '_groupedLineData.[].values',
+    '_groupedBarData.[]')
 
   hasNoData: Ember.computed ->
       not @get('_hasBarData') and not @get('_hasLineData')
@@ -98,7 +98,7 @@ ChartTimeseriesComponent = ChartBaseComponent.extend(
     Ember.A(for groupName, values of groups
       group: groupName
       values: values)
-  .property 'lineData.@each', 'ungroupedSeriesName'
+  .property 'lineData.[]', 'ungroupedSeriesName'
 
   # puts barData in a new format.
   # Resulting format: [[{group: ..., time: ..., value: ..., label:
@@ -118,7 +118,7 @@ ChartTimeseriesComponent = ChartBaseComponent.extend(
         group: label, time: drawTime, value: g.value, label: label, \
           labelTime: labelTime
     )
-  .property 'barData.@each', 'ungroupedSeriesName', 'barLeftOffset'
+  .property 'barData.[]', 'ungroupedSeriesName', 'barLeftOffset'
 
   # Transforms the center of the bar graph for the drawing based on the
   # specified barLeftOffset
@@ -168,7 +168,7 @@ ChartTimeseriesComponent = ChartBaseComponent.extend(
     barGroups = @groupBy barData, (datum) =>
       @_getLabelOrDefault(datum)
     _.keys(barGroups)
-  .property 'barData.@each', 'ungroupedSeriesName'
+  .property 'barData.[]', 'ungroupedSeriesName'
 
   _hasLineData: Ember.computed.notEmpty 'lineData'
 
@@ -235,7 +235,7 @@ ChartTimeseriesComponent = ChartBaseComponent.extend(
     paddedStart = @_padTimeBackward(startTime, timeDelta)
     paddedEnd = @_padTimeForward(endTime, timeDelta)
     [ new Date(paddedStart), new Date(paddedEnd) ]
-  .property 'timeDelta', '_groupedBarData.@each'
+  .property 'timeDelta', '_groupedBarData.[]'
 
   # The time range over which all bar groups are drawn
   xBetweenGroupDomain: Ember.computed.alias 'barDataExtent'
@@ -276,7 +276,7 @@ ChartTimeseriesComponent = ChartBaseComponent.extend(
     extents = data.getEach('values').map (series) ->
       d3.extent series.map((d) -> d.time)
     [d3.min(extents, (e) -> e[0]), d3.max(extents, (e) -> e[1])]
-  .property '_groupedLineData.@each.values'
+  .property '_groupedLineData.[].values'
 
   # The set of all time series
   xBetweenSeriesDomain: Ember.computed.alias 'lineSeriesNames'

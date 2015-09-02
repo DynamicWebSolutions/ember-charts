@@ -28,41 +28,41 @@
         <div class="form-group">
           <label class="col-lg-4 control-label">Line Data</label>
           <div class="col-lg-8">
-            {{view Ember.Select
-             contentBinding="availableLineDataSets"
-             valueBinding="selectedLineData"
-             class="form-control"
-            }}
+            <select class="form-control" onchange={{action (mut selectedLineData) value="target.value"}}>
+              {{#each availableLineDataSets key="@index" as |item|}}
+                <option selected={{is-equal item selectedLineData}} value={{item}}>{{item}}</option>
+              {{/each}}
+            </select>
           </div>
         </div>
         <div class="form-group">
           <label class="col-lg-4 control-label">Bar Data</label>
           <div class="col-lg-8">
-            {{view Ember.Select
-             contentBinding="availableBarDataSets"
-             valueBinding="selectedBarData"
-             class="form-control"
-            }}
+            <select class="form-control" onchange={{action (mut selectedBarData) value="target.value"}}>
+              {{#each availableBarDataSets key="@index" as |item|}}
+                <option selected={{is-equal item selectedBarData}} value={{item}}>{{item}}</option>
+              {{/each}}
+            </select>
           </div>
         </div>
         <div class="form-group">
           <label class="col-lg-4 control-label">Color</label>
           <div class="col-lg-8">
-            {{view Ember.Select
-             contentBinding="seedColorNames"
-             valueBinding="selectedSeedColorName"
-             class="form-control"
-            }}
+            <select class="form-control" onchange={{action (mut selectedSeedColorName) value="target.value"}}>
+              {{#each seedColorNames key="@index" as |item|}}
+                <option selected={{is-equal item selectedSeedColorName}} value={{item}}>{{item}}</option>
+              {{/each}}
+            </select>
           </div>
         </div>
         <div class="form-group">
           <label class="col-lg-4 control-label">Tick Interval</label>
           <div class="col-lg-8">
-            {{view Ember.Select
-             contentBinding="tickIntervals"
-             valueBinding="selectedInterval"
-             class="form-control"
-            }}
+            <select class="form-control" onchange={{action (mut selectedInterval) value="target.value"}}>
+              {{#each tickIntervals key="@index" as |item|}}
+                <option selected={{is-equal item selectedInterval}} value={{item}}>{{item}}</option>
+              {{/each}}
+            </select>          
           </div>
         </div>
         <div class="form-group">

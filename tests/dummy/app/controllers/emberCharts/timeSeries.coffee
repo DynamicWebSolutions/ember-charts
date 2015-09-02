@@ -32,6 +32,7 @@ TimesSeriesController = SlideController.extend
     data = @get('lineDataHash.'+[@get 'selectedLineData']+'.content')
     Ember.A(data.toArray().map (datum) ->
       {
+        label: datum._data.label
         time: datum._data.time
         value: datum._data.value
       })
@@ -41,36 +42,37 @@ TimesSeriesController = SlideController.extend
     data = @get('barDataHash.'+[@get 'selectedBarData']+'.content')
     Ember.A(data.toArray().map (datum) ->
       {
+        label: datum._data.label
         time: datum._data.time
         value: datum._data.value
       })    
   .property 'selectedBarData', 'barDataHash'
 
   lineDataHash: Ember.computed ->
-    monthly_return_single_series: null
-    monthly_return_double_series: null
-    monthly_return_triple_series: null
-    monthly_return_single_period: null
-    monthly_return_double_period: null
-    monthly_return_negative_period: null
+    # monthly_return_single_series: null
+    # monthly_return_double_series: null
+    # monthly_return_triple_series: null
+    # monthly_return_single_period: null
+    # monthly_return_double_period: null
+    # monthly_return_negative_period: null
     daily_curr_value: @get 'content.dailyCurrValue'    
-    daily_diff_value: null
-    daily_two_series: null
-    daily_three_series: null
-    daily_four_series: null
-    daily_five_series: null
-    daily_six_series: null
-    '----': null
-    value_p1d_p1y: null
-    value_p1w_p1y: null
-    value_p1m_p1y: null
-    value_p1m_p2y: null
-    value_p1m_p5y: null
-    zeroes_grouped: null
-    zeroes_ungrouped: null
-    same_value_grouped: null
-    same_value_ungrouped: null
-    empty: null
+    daily_diff_value: @get 'content.dailyDiffValue'
+    # daily_two_series: null
+    # daily_three_series: null
+    # daily_four_series: null
+    daily_five_series: @get 'content.dailyFiveSeries'
+    # daily_six_series: null
+    # '----': null
+    # value_p1d_p1y: null
+    # value_p1w_p1y: null
+    # value_p1m_p1y: null
+    # value_p1m_p2y: null
+    # value_p1m_p5y: null
+    # zeroes_grouped: null
+    # zeroes_ungrouped: null
+    # same_value_grouped: null
+    # same_value_ungrouped: null
+    # empty: null
 
   barDataHash: Ember.computed.alias 'lineDataHash'
   selectedLineData: 'daily_curr_value'

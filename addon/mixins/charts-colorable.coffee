@@ -66,12 +66,12 @@ ChartsColorableMixin = Ember.Mixin.create(
   # Darkest color (seed color)
   leastTintedColor: Ember.computed ->
     @get('colorRange')[0]
-  .property 'colorRange.@each'
+  .property 'colorRange.[]'
 
   # Lightest color (fully tinted color)
   mostTintedColor: Ember.computed ->
     @get('colorRange')[1]
-  .property 'colorRange.@each'
+  .property 'colorRange.[]'
 
   numColorSeries: 1
   getSeriesColor: Ember.computed ->

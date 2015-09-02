@@ -1,10 +1,9 @@
 `import Ember from 'ember'`
 
 SlideController = Ember.Controller.extend(
-  # prettyPrintedData: Ember.computed(->
-  #   JSON.stringify @get('data'), null, '\t'
-  #   return
-  # ).property('data')
+  prettyPrintedData: Ember.computed(->
+    JSON.stringify @get('data'), null, '\t'
+  ).property('data')
 
   seedColors:
     purple: 'rgb(100,60,120)'
@@ -26,7 +25,7 @@ SlideController = Ember.Controller.extend(
 
   selectedSeedColor: Ember.computed ->
     @get('seedColors')[@get 'selectedSeedColorName']
-  .property 'selectedSeedColorName', 'seedColors.@each'
+  .property 'selectedSeedColorName', 'seedColors.[]'
 )
 
 `export default SlideController`  

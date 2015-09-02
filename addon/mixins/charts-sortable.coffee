@@ -7,7 +7,7 @@ ChartsSortableMixin = Ember.Mixin.create(
     data = @get 'data'
     key = @get 'sortKey'
     if Ember.isEmpty(data) then [] else data.sortBy key
-  .property 'data.@each', 'sortKey'
+  .property 'data.[]', 'sortKey'
 )
 
 `export default ChartsSortableMixin`

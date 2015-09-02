@@ -8,7 +8,7 @@ module.exports = function(app) {
 
       var mock = [],
           i = 0,
-          start = moment().subtract('days', 60),
+          start = moment().subtract('months', 2),
           end = moment();
 
 
