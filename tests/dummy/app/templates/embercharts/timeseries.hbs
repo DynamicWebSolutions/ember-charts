@@ -6,15 +6,15 @@
   <div class="example-container">
     <div class="chart-container">
       {{chart-timeseries
-        barData=barData
         lineData=lineData
         selectedInterval=selectedInterval
         selectedSeedColor=selectedSeedColor
-        barPadding=barPadding
-        barGroupPadding=barGroupPadding
-        barLeftOffset=barLeftOffset
         yAxisFromZero=yAxisFromZero
       }}
+      {{!--         barData=barData
+        barPadding=barPadding
+        barGroupPadding=barGroupPadding
+        barLeftOffset=barLeftOffset --}}
     </div>
   </div>
 
@@ -66,21 +66,21 @@
         <div class="form-group">
           <label class="col-lg-4 control-label">Bar Padding</label>
           <div class="col-lg-8">
-            {{view App.ScrubberComponent min="0" max="1" step="0.05" valueBinding="barPadding"}}
+            {{!view App.ScrubberComponent min="0" max="1" step="0.05" valueBinding="barPadding"}}
             <span class="help-block">Bar Padding: {{barPadding}}</span>
           </div>
         </div>
         <div class="form-group">
           <label class="col-lg-4 control-label">Bar Group Padding</label>
           <div class="col-lg-8">
-            {{view App.ScrubberComponent min="0" max="1" step="0.05" valueBinding="barGroupPadding"}}
+            {{!view App.ScrubberComponent min="0" max="1" step="0.05" valueBinding="barGroupPadding"}}
             <span class="help-block">Bar Group Padding: {{barGroupPadding}}</span>
           </div>
         </div>
         <div class="form-group">
           <label class="col-lg-4 control-label">Bar Left Offset</label>
           <div class="col-lg-8">
-            {{view App.ScrubberComponent min="-1" max="1" step="0.05"
+            {{!view App.ScrubberComponent min="-1" max="1" step="0.05"
             valueBinding="barLeftOffset"}}
             <span class="help-block">Bar Left Offset: {{barLeftOffset}}</span>
           </div>

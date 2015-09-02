@@ -29,7 +29,12 @@ TimesSeriesController = SlideController.extend
   data: Ember.computed.alias 'lineData'
 
   lineData: Ember.computed ->
-    @get('lineDataHash')[@get 'selectedLineData']
+    data = @get('lineDataHash.'+[@get 'selectedLineData']+'.content')
+    Ember.A(data.toArray().map (datum) ->
+      {
+        time: datum._data.time
+        value: datum._data.value
+      })
   .property 'selectedLineData', 'lineDataHash'
 
   barData: Ember.computed ->
@@ -63,8 +68,8 @@ TimesSeriesController = SlideController.extend
     empty: null
 
   barDataHash: Ember.computed.alias 'lineDataHash'
-  selectedLineData: 'daily_two_series'
-  selectedBarData: 'monthly_return_triple_series'
+  selectedLineData: 'daily_curr_value'
+  selectedBarData: 'daily_curr_value'
 
   dataIntervals: Ember.computed ->
     intervals = [

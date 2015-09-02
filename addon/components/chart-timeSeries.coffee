@@ -69,8 +69,8 @@ ChartTimeseriesComponent = ChartBaseComponent.extend(
     '_groupedBarData.@each')
 
   hasNoData: Ember.computed ->
-    not @get('_hasBarData') and not @get('_hasLineData')
-  .property '_hasBarData', '_hasLineData'
+      not @get('_hasBarData') and not @get('_hasLineData')
+    .property '_hasBarData', '_hasLineData'
 
   # ----------------------------------------------------------------------------
   # Overrides of Legend methods
@@ -93,11 +93,11 @@ ChartTimeseriesComponent = ChartBaseComponent.extend(
     lineData = @get 'lineData'
     return [] if Ember.isEmpty lineData
 
-    groups = Ember.Charts.Helpers.groupBy lineData, (datum) =>
+    groups = @groupBy lineData, (datum) =>
       @_getLabelOrDefault(datum)
-    for groupName, values of groups
+    Ember.A(for groupName, values of groups
       group: groupName
-      values: values
+      values: values)
   .property 'lineData.@each', 'ungroupedSeriesName'
 
   # puts barData in a new format.
@@ -109,7 +109,7 @@ ChartTimeseriesComponent = ChartBaseComponent.extend(
     return [] if Ember.isEmpty barData
 
     # returns map from time to array of bar hashes
-    barTimes = Ember.Charts.Helpers.groupBy barData, (d) -> d.time.getTime()
+    barTimes = @groupBy barData, (d) -> d.time.getTime()
     barGroupsByTime = for timePoint, groups of barTimes
       for g in groups
         label = @_getLabelOrDefault(g)
@@ -164,7 +164,7 @@ ChartTimeseriesComponent = ChartBaseComponent.extend(
   _barGroups: Ember.computed ->
     barData = @get 'barData'
     return [] if Ember.isEmpty barData
-    barGroups = Ember.Charts.Helpers.groupBy barData, (datum) =>
+    barGroups = @groupBy barData, (datum) =>
       @_getLabelOrDefault(datum)
     _.keys(barGroups)
   .property 'barData.@each', 'ungroupedSeriesName'
@@ -684,13 +684,12 @@ ChartTimeseriesComponent = ChartBaseComponent.extend(
     # Always remove the previous lines, this allows us to maintain the
     # rendering order of bars behind lines
     @removeAllSeries()
-
     series = @get 'series'
     series.enter()
       .append('g').attr('class', 'series')
       .append('path').attr('class', 'line')
-    series.exit()
-      .remove()
+    #series.exit()
+     # .remove()
 
   updateLineGraphic: ->
     series = @get 'series'

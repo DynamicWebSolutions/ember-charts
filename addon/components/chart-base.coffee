@@ -1,11 +1,13 @@
 `import Ember from 'ember'`
 `import Colorable from '../mixins/charts-colorable'`
 `import ResizeHandler from '../mixins/charts-resize'`
+`import Helpers from '../mixins/charts-helpers'`
 `import layout from '../templates/components/chart-base'`
 
 ChartBaseComponent = Ember.Component.extend(
   Colorable,
   ResizeHandler,
+  Helpers,
   layout: layout
   classNames: ['chart-frame', 'scroll-y']
   isInteractive: yes
