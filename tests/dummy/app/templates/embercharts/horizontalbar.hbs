@@ -30,44 +30,57 @@
         <div class="form-group">
           <label class="col-lg-4 control-label">Data</label>
           <div class="col-lg-8">
-            {{view Ember.Select
-              contentBinding="availableDataSets"
-              valueBinding="selectedData"
-              class="form-control"
-            }}
+            <select class="form-control" onchange={{action (mut selectedData) value="target.value"}}>
+              {{#each availableDataSets key="@index" as |item|}}
+                <option selected={{is-equal item selectedData}} value={{item}}>{{item}}</option>
+              {{/each}}
+            </select>          
           </div>
         </div>
         <div class="form-group">
           <label class="col-lg-4 control-label">Sorting</label>
           <div class="col-lg-8">
-            {{view Ember.Select
-              contentBinding="sortTypes"
-              valueBinding="selectedSortType"
-              class="form-control"
-            }}
+            <select class="form-control" onchange={{action (mut selectedSortType) value="target.value"}}>
+              {{#each sortTypes key="@index" as |item|}}
+                <option selected={{is-equal item selectedSortType}} value={{item}}>{{item}}</option>
+              {{/each}}
+            </select>            
           </div>
         </div>
         <div class="form-group">
           <label class="col-lg-4 control-label">Color</label>
           <div class="col-lg-8">
-            {{view Ember.Select
-              contentBinding="seedColorNames"
-              valueBinding="selectedSeedColorName"
-              class="form-control"
-            }}
+            <select class="form-control" onchange={{action (mut selectedSeedColorName) value="target.value"}}>
+              {{#each seedColorNames key="@index" as |item|}}
+                <option selected={{is-equal item selectedSeedColorName}} value={{item}}>{{item}}</option>
+              {{/each}}
+            </select>            
           </div>
         </div>
         <div class="form-group">
           <label class="col-lg-4 control-label">Min Bar Thickness</label>
           <div class="col-lg-8">
-            {{view App.ScrubberComponent  min=20 max=200 step=10 valueBinding="minBarThickness"}}
+            {{ui-slider
+              value=minBarThickness
+              min=20
+              max=200
+              step=10
+              action="minBarThickness"
+            }}          
             <span class="help-block">Min Thickness: {{minBarThickness}}</span>
           </div>
         </div>
         <div class="form-group">
           <label class="col-lg-4 control-label">Max Bar Thickness</label>
           <div class="col-lg-8">
-            {{view App.ScrubberComponent min=20 max=200 step=10 valueBinding="maxBarThickness"}}
+            {{ui-slider
+              value=maxBarThickness
+              min=20
+              max=200
+              step=10
+              action="maxBarThickness"
+            }}             
+            {{!view App.ScrubberComponent min=20 max=200 step=10 valueBinding="maxBarThickness"}}
             <span class="help-block">Max Thickness: {{maxBarThickness}}</span>
           </div>
         </div>

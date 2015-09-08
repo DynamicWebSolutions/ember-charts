@@ -8,7 +8,7 @@ var Router = Ember.Router.extend({
 Router.map(function() {
 	this.route('license');
 
-	this.route('embercharts', {path: '/ember-charts'}, function() {
+	this.resource('embercharts', {path: '/ember-charts'}, function() {
 		this.route('overview');
 		this.route('documentation');
 		this.route('pie');
