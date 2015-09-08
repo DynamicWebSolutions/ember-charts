@@ -1,10 +1,21 @@
 module.exports = function(app) {
   var express = require('express');
   var timeseriesSamevalueungroupedRouter = express.Router();
+  var data = require('../../generators/timeseries');
 
   timeseriesSamevalueungroupedRouter.get('/', function(req, res) {
-    res.send({
-      'timeseries/samevalueungrouped': []
+   
+    data({
+      'period': 100,
+      'series': 'days',
+      'min': 1.00,
+      'max': 1.00
+    },
+    function(results) {
+
+      res.send({
+        'timeseries/samevalueungrouped': results
+      });
     });
   });
 
@@ -32,5 +43,5 @@ module.exports = function(app) {
     res.status(204).end();
   });
 
-  app.use('/api/timeseries-samevalueungrouped', timeseriesSamevalueungroupedRouter);
+  app.use('/api/timeseries/samevalueungrouped', timeseriesSamevalueungroupedRouter);
 };

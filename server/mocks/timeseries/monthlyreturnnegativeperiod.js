@@ -1,10 +1,25 @@
 module.exports = function(app) {
   var express = require('express');
   var timeseriesMonthlyreturnnegativeperiodRouter = express.Router();
+  var data = require('../../generators/timeseries');
 
   timeseriesMonthlyreturnnegativeperiodRouter.get('/', function(req, res) {
-    res.send({
-      'timeseries/monthlyreturnnegativeperiod': []
+    
+    data({
+      'period': 13,
+      'groups': [
+        'Software & Programming',
+        'Telecommunication'
+      ],
+      'series': 'months',
+      'min': -10.00,
+      'max': 10.00
+    },
+    function(results) {
+
+      res.send({
+        'timeseries/monthlyreturnnegativeperiod': results
+      });
     });
   });
 
@@ -32,5 +47,5 @@ module.exports = function(app) {
     res.status(204).end();
   });
 
-  app.use('/api/timeseries-monthlyreturnnegativeperiod', timeseriesMonthlyreturnnegativeperiodRouter);
+  app.use('/api/timeseries/monthlyreturnnegativeperiod', timeseriesMonthlyreturnnegativeperiodRouter);
 };

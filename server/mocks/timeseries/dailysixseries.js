@@ -1,10 +1,28 @@
 module.exports = function(app) {
   var express = require('express');
   var timeseriesDailysixseriesRouter = express.Router();
+  var data = require('../../generators/timeseries');
 
   timeseriesDailysixseriesRouter.get('/', function(req, res) {
-    res.send({
-      'timeseries/dailysixseries': []
+
+    data({
+      'period': 100,
+      'groups': [
+        'Group One',
+        'Group Two',
+        'Group Three',
+        'Group Four',
+        'Group Five',
+        'Group Six'
+      ],
+      'series': 'days',
+      'min': 4000,
+      'max': 4400
+    },
+    function(results) {
+      res.send({
+        'timeseries/dailysixseries': results
+      });
     });
   });
 
@@ -32,5 +50,5 @@ module.exports = function(app) {
     res.status(204).end();
   });
 
-  app.use('/api/timeseries-dailysixseries', timeseriesDailysixseriesRouter);
+  app.use('/api/timeseries/dailysixseries', timeseriesDailysixseriesRouter);
 };

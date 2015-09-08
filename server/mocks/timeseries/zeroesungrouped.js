@@ -1,10 +1,21 @@
 module.exports = function(app) {
   var express = require('express');
   var timeseriesZeroesungroupedRouter = express.Router();
+  var data = require('../../generators/timeseries');
 
   timeseriesZeroesungroupedRouter.get('/', function(req, res) {
-    res.send({
-      'timeseries/zeroesungrouped': []
+  
+    data({
+      'period': 100,
+      'series': 'days',
+      'min': 0,
+      'max': 0
+    },
+    function(results) {
+
+      res.send({
+        'timeseries/zeroesungrouped': results
+      });
     });
   });
 
@@ -32,5 +43,5 @@ module.exports = function(app) {
     res.status(204).end();
   });
 
-  app.use('/api/timeseries-zeroesungrouped', timeseriesZeroesungroupedRouter);
+  app.use('/api/timeseries/zeroesungrouped', timeseriesZeroesungroupedRouter);
 };

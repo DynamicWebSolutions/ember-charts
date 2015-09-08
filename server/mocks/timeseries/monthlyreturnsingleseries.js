@@ -1,10 +1,25 @@
 module.exports = function(app) {
   var express = require('express');
   var timeseriesMonthlyreturnsingleseriesRouter = express.Router();
+  var data = require('../../generators/timeseries');
 
   timeseriesMonthlyreturnsingleseriesRouter.get('/', function(req, res) {
-    res.send({
-      'timeseries/monthlyreturnsingleseries': []
+    
+    data({
+      'period': 0,
+      'groups': [
+        'Software & Programming',
+        'Telecommunication'
+      ],
+      'series': 'days',
+      'min': 1.00,
+      'max': 10.00
+    },
+    function(results) {
+
+      res.send({
+        'timeseries/monthlyreturnsingleseries': results
+      });
     });
   });
 
@@ -32,5 +47,5 @@ module.exports = function(app) {
     res.status(204).end();
   });
 
-  app.use('/api/timeseries-monthlyreturnsingleseries', timeseriesMonthlyreturnsingleseriesRouter);
+  app.use('/api/timeseries/monthlyreturnsingleseries', timeseriesMonthlyreturnsingleseriesRouter);
 };
