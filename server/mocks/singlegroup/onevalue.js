@@ -4,7 +4,13 @@ module.exports = function(app) {
 
   singlegroupOnevalueRouter.get('/', function(req, res) {
     res.send({
-      'singlegroup/onevalue': []
+      'singlegroup/onevalue': [
+        {
+          id:1,
+          label: "Label 1",
+          value: 20
+        }
+      ]
     });
   });
 
@@ -32,5 +38,5 @@ module.exports = function(app) {
     res.status(204).end();
   });
 
-  app.use('/api/singlegroup-onevalue', singlegroupOnevalueRouter);
+  app.use('/api/singlegroup/onevalue', singlegroupOnevalueRouter);
 };

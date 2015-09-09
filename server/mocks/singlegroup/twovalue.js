@@ -4,7 +4,18 @@ module.exports = function(app) {
 
   singlegroupTwovaluesRouter.get('/', function(req, res) {
     res.send({
-      'singlegroup/twovalues': []
+      'singlegroup/twovalue': [
+        {
+          id: 1,
+          label: "Label 1",
+          value: 20
+        },
+        {
+          id: 2,
+          label: "Label 2",
+          value: -1
+        }
+      ]
     });
   });
 
@@ -32,5 +43,5 @@ module.exports = function(app) {
     res.status(204).end();
   });
 
-  app.use('/api/singlegroup-twovalues', singlegroupTwovaluesRouter);
+  app.use('/api/singlegroup/twovalue', singlegroupTwovaluesRouter);
 };

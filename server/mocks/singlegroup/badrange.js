@@ -73,5 +73,5 @@ module.exports = function(app) {
     res.status(204).end();
   });
 
-  app.use('/api/singlegroup-badrange', singlegroupBadrangeRouter);
+  app.use('/api/singlegroup/badrange', singlegroupBadrangeRouter);
 };

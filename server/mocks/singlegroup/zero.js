@@ -4,7 +4,14 @@ module.exports = function(app) {
 
   singlegroupZeroRouter.get('/', function(req, res) {
     res.send({
-      'singlegroup/zero': []
+      'singlegroup/zero': [
+        {
+          id: 1,
+          label: "Label 1",
+          value: 0,
+          type: "percent"  
+        }
+      ]
     });
   });
 
@@ -32,5 +39,5 @@ module.exports = function(app) {
     res.status(204).end();
   });
 
-  app.use('/api/singlegroup-zero', singlegroupZeroRouter);
+  app.use('/api/singlegroup/zero', singlegroupZeroRouter);
 };

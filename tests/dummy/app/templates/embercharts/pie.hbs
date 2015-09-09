@@ -5,7 +5,7 @@
 
   <div class="example-container">
     <div class="chart-container">
-      {{pie-chart
+      {{chart-pie
         maxRadius=maxRadius
         maxSlicePercent=maxSlicePercent
         minSlicePercent=minSlicePercent
@@ -25,42 +25,59 @@
         <div class="form-group">
           <label class="col-lg-4 control-label">Data</label>
           <div class="col-lg-8">
-            {{view Ember.Select
-             class="chart-data"
-             contentBinding="availableDataSets"
-             valueBinding="selectedData"
-             class="form-control"
-            }}
+            <select class="form-control" onchange={{action (mut selectedData) value="target.value"}}>
+              {{#each availableDataSets key="@index" as |item|}}
+                <option selected={{is-equal item selectedData}} value={{item}}>{{item}}</option>
+              {{/each}}
+            </select>            
           </div>
         </div>
         <div class="form-group">
           <label class="col-lg-4 control-label">Color</label>
           <div class="col-lg-8">
-            {{view Ember.Select
-             contentBinding="seedColorNames"
-             valueBinding="selectedSeedColorName"
-             class="form-control"
-            }}
+            <select class="form-control" onchange={{action (mut selectedSeedColorName) value="target.value"}}>
+              {{#each availableDataSets key="@index" as |item|}}
+                <option selected={{is-equal item selectedSeedColorName}} value={{item}}>{{item}}</option>
+              {{/each}}
+            </select>            
           </div>
         </div>
         <div class="form-group">
           <label class="col-lg-4 control-label">Max Radius</label>
           <div class="col-lg-8">
-            {{view App.ScrubberComponent min="40" max="300" step="10" valueBinding="maxRadius"}}
+            {{ui-slider
+              value=maxRadius
+              min=40
+              max=300
+              step=10
+              action="maxRadius"
+            }}            
             <span class="help-block">Max Radius: {{maxRadius}}</span>
           </div>
         </div>
         <div class="form-group">
           <label class="col-lg-4 control-label">Max Number of Slices</label>
           <div class="col-lg-8">
-            {{view App.ScrubberComponent min="1" max="30" step="1" valueBinding="maxNumberOfSlices"}}
+            {{ui-slider
+              value=maxNumberOfSlices
+              min=1
+              max=30
+              step=1
+              action="maxNumberOfSlices"
+            }}           
             <span class="help-block">Max Number of Slices: {{maxNumberOfSlices}}</span>
           </div>
         </div>
         <div class="form-group">
           <label class="col-lg-4 control-label">Min Slice Percent</label>
           <div class="col-lg-8">
-            {{view App.ScrubberComponent min="0" max="20" step="1" valueBinding="minSlicePercent"}}
+            {{ui-slider
+              value=minSlicePercent
+              min=0
+              max=20
+              step=1
+              action="minSlicePercent"
+            }}           
             <span class="help-block">Min Slice Percent: {{minSlicePercent}}</span>
           </div>
         </div>
@@ -70,7 +87,7 @@
     <div class="col-md-6">
       <h4>JSON Data</h4>
       <div class="chart-json">
-<pre>{{prettyPrintedData}}</pre>
+<pre>{{!prettyPrintedData}}</pre>
       </div>
     </div>
   </div>

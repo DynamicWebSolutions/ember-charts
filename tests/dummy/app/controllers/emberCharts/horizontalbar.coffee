@@ -30,17 +30,17 @@ HorizontalBarController = SlideController.extend
 
   rawDataHash: Ember.computed ->
     asset_values: @get 'content.assetValues'
-    # many_values: App.data.many_values
-    # monthly_return_single_period: App.data.monthly_return_single_period
-    # high_net_worth_duration: App.data.high_net_worth_duration
-    # '----': App.data.null
-    # empty: App.data.empty
-    # one_value: App.data.one_value
-    # two_values: App.data.two_values
-    # zero: App.data.zero
-    # zeroes: App.data.zeroes
-    # sum_to_zero: App.data.sum_to_zero
-    # bad_range: App.data.bad_range
+    many_values: @get 'content.manyValues'
+    monthly_return_single_period: @get 'content.monthlyReturnSinglePeriod'
+    high_net_worth_duration: @get 'content.highNetWorthDuration'
+    '----': Ember.A([])
+    empty: Ember.A([])
+    one_value: @get 'content.oneValue'
+    two_values: @get 'content.twoValues'
+    zero: @get 'content.zero'
+    zeroes: @get 'content.zeroes'
+    sum_to_zero: @get 'content.sumToZero'
+    bad_range: @get 'content.badRange'
 
   selectedData: 'asset_values'
 

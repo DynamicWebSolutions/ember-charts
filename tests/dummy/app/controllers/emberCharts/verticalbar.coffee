@@ -1,28 +1,28 @@
 `import Ember from 'ember'`
 `import SlideController from './slide'`
 
-
-PieController = SlideController.extend
+VerticalBarController = SlideController.extend
   # ---------
   # Action Hash
   # ---------
 
   actions: 
-    maxRadius: (value) ->
-      @set 'maxRadius', value
-    maxNumberOfSlices: (value) ->
-      @set 'maxNumberOfSlices', value
-    minSlicePercent: (value) ->
-      @set 'minSlicePercent', value
+    maxLabelHeight: (value) ->
+      @set 'maxLabelHeight', value
+    betweenGroupPadding: (value) ->
+      @set 'betweenGroupPadding', value
+    withinGroupPadding: (value) ->
+      @set 'withinGroupPadding', value
 
       
   # ---------
   # Default Settings
   # ---------
 
-  maxNumberOfSlices: 8
-  minSlicePercent: 2
-  maxRadius: 100
+  betweenGroupPadding: 0
+  withinGroupPadding: 0
+  maxLabelHeight: 40
+  stackBars: no
 
   # ---------
   # Data Selection
@@ -38,10 +38,15 @@ PieController = SlideController.extend
       {
         label: datum._data.label
         value: datum._data.value
-      })    
+        group: datum._data.group
+      })
   .property 'selectedData', 'rawDataHash'
 
   rawDataHash: Ember.computed ->
+    two_ranges: @get 'content.twoRanges'
+    three_ranges: @get 'content.threeRanges'
+    five_ranges: @get 'content.fiveRanges'
+    '----': Ember.A([])
     asset_values: @get 'content.assetValues'
     many_values: @get 'content.manyValues'
     monthly_return_single_period: @get 'content.monthlyReturnSinglePeriod'
@@ -54,6 +59,7 @@ PieController = SlideController.extend
     zeroes: @get 'content.zeroes'
     sum_to_zero: @get 'content.sumToZero'
     bad_range: @get 'content.badRange'
-  selectedData: 'asset_values'
 
-`export default PieController`
+  selectedData: 'three_ranges'
+
+`export default VerticalBarController`

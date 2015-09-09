@@ -1,13 +1,23 @@
 `import Ember from 'ember'`
 
-timeSeriesRoute = Ember.Route.extend
+route = Ember.Route.extend
 
 	model: ->
 		Ember.RSVP.hash 
-			dailyCurrValue: @store.find('timeSeries.dailyCurrValue')
+			twoRanges: @store.findAll('multigroup.tworange')
+			threeRanges: @store.findAll('multigroup.threerange')
+			fiveRanges: @store.findAll('multigroup.fiverange')
+			assetValues: @store.findAll('singlegroup.assetvalue')
+			manyValues: @store.findAll('singlegroup.manyvalue')
+			monthlyReturnSinglePeriod: @store.findAll('timeseries.monthlyreturnsingleperiod')
+			highNetWorthDuration: @store.findAll('singlegroup.highnetworthduration')
+			oneValue: @store.findAll('singlegroup.onevalue')
+			twoValues: @store.findAll('singlegroup.twovalue')
+			zero: @store.findAll('singlegroup.zero')
+			zeroes: @store.findAll('singlegroup.manyzero')
+			sumToZero: @store.findAll('singlegroup.sumtozero')
+			badRange: @store.findAll('singlegroup.badrange')
 
 
-	setupController: (controller, model) ->
-		controller.set('model', model)
 
-`export default timeSeriesRoute`	
+`export default route`	
