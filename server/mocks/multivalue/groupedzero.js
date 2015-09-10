@@ -9,7 +9,7 @@ module.exports = function(app) {
           id: 1,
           group: "Cash",
           xValue: 0,
-          yValue: 0  
+          yValue: 0          
         }
       ]
     });

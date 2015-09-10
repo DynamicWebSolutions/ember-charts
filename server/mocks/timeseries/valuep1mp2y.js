@@ -14,7 +14,7 @@ module.exports = function(app) {
     function(results) {
 
       res.send({
-        'timeseries/valuep1mp1y': results
+        'timeseries/valuep1mp2y': results
       });
     });
   });

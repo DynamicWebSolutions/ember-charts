@@ -17,9 +17,8 @@ module.exports = function(app) {
       'max': 10.00
     },
     function(results) {
-
       res.send({
-        'timeseries/monthlyreturnsingleseries': results
+        'timeseries/monthlyreturntripleseries': results
       });
     });
   });

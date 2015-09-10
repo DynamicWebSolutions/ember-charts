@@ -4,7 +4,7 @@ module.exports = function(app) {
 
   multivalueGroupedzerosRouter.get('/', function(req, res) {
     res.send({
-      'multivalue/groupedzeros': [
+      'multivalue/groupedmanyzero': [
         {
           id: 1, group: "Energy",
           xValue: 0,
@@ -58,5 +58,5 @@ module.exports = function(app) {
     res.status(204).end();
   });
 
-  app.use('/api/multivalue/groupedzeros', multivalueGroupedzerosRouter);
+  app.use('/api/multivalue/groupedmanyzero', multivalueGroupedzerosRouter);
 };

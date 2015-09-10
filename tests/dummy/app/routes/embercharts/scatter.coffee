@@ -9,8 +9,8 @@ route = Ember.Route.extend
 			ungroupedPercent: @store.findAll('multivalue.ungroupedpercent')
 			ungroupedMoney: @store.findAll('multivalue.ungroupedmoney')			
 			groupedZero: @store.findAll('multivalue.groupedzero')
-			groupedZeros: @store.findAll('multivalue.groupedzeros')
+			groupedZeros: @store.findAll('multivalue.groupedmanyzero')
 			ungroupedZero: @store.findAll('multivalue.ungroupedzero')
-			ungroupedZeros: @store.findAll('multivalue.ungroupedzeros')
+			ungroupedZeros: @store.findAll('multivalue.ungroupedmanyzero')
 
 `export default route`	

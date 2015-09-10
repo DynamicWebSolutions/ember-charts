@@ -4,7 +4,7 @@ module.exports = function(app) {
 
   multivalueUngroupedzerosRouter.get('/', function(req, res) {
     res.send({
-      'multivalue/ungroupedzeros': [
+      'multivalue/ungroupedmanyzero': [
         {
           id: 1, xValue: 0,
           yValue: 0
@@ -52,5 +52,5 @@ module.exports = function(app) {
     res.status(204).end();
   });
 
-  app.use('/api/multivalue/ungroupedzeros', multivalueUngroupedzerosRouter);
+  app.use('/api/multivalue/ungroupedmanyzero', multivalueUngroupedzerosRouter);
 };
