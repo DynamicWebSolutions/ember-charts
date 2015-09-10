@@ -1,11 +1,13 @@
 `import Ember from 'ember'`
 `import ChartBaseComponent from './chart-base'`
+`import Helpers from '../mixins/charts-helpers'`
 `import ToolTip from '../mixins/charts-tooltip'`
 `import Formattable from '../mixins/charts-format'`
 `import Sortable from '../mixins/charts-sortable'`
 
 ChartHorizontalbarComponent = ChartBaseComponent.extend(
 	ToolTip,
+  Helpers,
 	Formattable,
 	Sortable,
   classNames: ['chart-horizontal-bar']
@@ -263,7 +265,7 @@ ChartHorizontalbarComponent = ChartBaseComponent.extend(
       .attr(@get 'valueLabelAttrs')
 
     labelWidth = @get 'labelWidth'
-    labelTrimmer = Ember.Charts.Helpers.LabelTrimmer.create
+    labelTrimmer = this.LabelTrimmer.create
       getLabelSize: (d) -> labelWidth
       getLabelText: (d) -> d.label
 

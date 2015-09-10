@@ -46,14 +46,15 @@ PieController = SlideController.extend
     many_values: @get 'content.manyValues'
     monthly_return_single_period: @get 'content.monthlyReturnSinglePeriod'
     high_net_worth_duration: @get 'content.highNetWorthDuration'
-    '----': Ember.A([])
-    empty: Ember.A([])
+    '----': Ember.create(content: Ember.A())
+    empty: Ember.create(content: Ember.A())
     one_value: @get 'content.oneValue'
     two_values: @get 'content.twoValues'
     zero: @get 'content.zero'
     zeroes: @get 'content.zeroes'
     sum_to_zero: @get 'content.sumToZero'
     bad_range: @get 'content.badRange'
+    
   selectedData: 'asset_values'
 
 `export default PieController`

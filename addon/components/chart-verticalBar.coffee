@@ -1,6 +1,8 @@
 `import Ember from 'ember'`
 `import ChartBaseComponent from './chart-base'`
 `import ToolTip from '../mixins/charts-tooltip'`
+`import Helpers from '../mixins/charts-helpers'`
+`import Sort from '../mixins/charts-sortable'`
 `import Formattable from '../mixins/charts-format'`
 `import Legend from '../mixins/charts-legend'`
 `import TimeSeriesLabeler from '../mixins/charts-timeserieslabeler'`
@@ -9,6 +11,7 @@
 
 ChartVerticalbarComponent = ChartBaseComponent.extend(
 	ToolTip,
+  Sort,
 	Formattable,
 	Legend,
 	TimeSeriesLabeler,
@@ -59,7 +62,7 @@ ChartVerticalbarComponent = ChartBaseComponent.extend(
   groupedData: Ember.computed ->
     data = @get 'sortedData'
     return [] if Ember.isEmpty data
-    Ember.Charts.Helpers.groupBy data, (d) =>
+    @groupBy data, (d) =>
       d.group ? @get('ungroupedSeriesName')
   .property 'sortedData', 'ungroupedSeriesName'
 
@@ -79,6 +82,7 @@ ChartVerticalbarComponent = ChartBaseComponent.extend(
 
   finishedData: Ember.computed ->
     if @get('isGrouped')
+      results = []
       return [] if Ember.isEmpty @get('groupedData')
       for groupName, values of @get('groupedData')
         y0 = 0
@@ -492,7 +496,7 @@ ChartVerticalbarComponent = ChartBaseComponent.extend(
 
     if @get('_shouldRotateLabels')
       rotateLabelDegrees = @get 'rotateLabelDegrees'
-      labelTrimmer = Ember.Charts.Helpers.LabelTrimmer.create
+      labelTrimmer = @LabelTrimmer.create
         getLabelSize: (d) => @get 'rotatedLabelLength'
         getLabelText: (d) -> d.group
       labels.call(labelTrimmer.get 'trim').attr
@@ -502,7 +506,7 @@ ChartVerticalbarComponent = ChartBaseComponent.extend(
 
     else
       maxLabelWidth = @get 'maxLabelWidth'
-      labelTrimmer = Ember.Charts.Helpers.LabelTrimmer.create
+      labelTrimmer = @LabelTrimmer.create
         getLabelSize: (d) -> maxLabelWidth
         getLabelText: (d) -> d.group ? ''
       labels.call(labelTrimmer.get 'trim').attr

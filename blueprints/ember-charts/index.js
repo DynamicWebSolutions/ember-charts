@@ -12,7 +12,7 @@ module.exports = {
   afterInstall: function(options) {
     return this.addBowerPackageToProject([
       {name: 'd3', target: '~3.5.6'},
-      {name: 'lodash', target: '~3.10.1'}      
+      {name: 'lodash', target: '~1.2.1'}      
     ]); 
   }
 };

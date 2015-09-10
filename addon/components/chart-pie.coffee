@@ -1,15 +1,17 @@
 `import Ember from 'ember'`
 `import ChartBaseComponent from './chart-base'`
 `import ToolTip from '../mixins/charts-tooltip'`
+`import Helpers from '../mixins/charts-helpers'`
 `import Formattable from '../mixins/charts-format'`
 `import Sortable from '../mixins/charts-sortable'`
-`import PieLegend from '../mixins/chart-pielegend'`
+`import PieLegend from '../mixins/charts-pielegend'`
 
 ChartPieComponent = ChartBaseComponent.extend(
 	ToolTip,
 	Formattable,
 	Sortable,
 	PieLegend,
+  Helpers,
   classNames: ['chart-pie']
   # ----------------------------------------------------------------------------
   # Pie Chart Options
@@ -78,7 +80,6 @@ ChartPieComponent = ChartBaseComponent.extend(
   sortedDataWithOther: Ember.computed ->
     data = _.cloneDeep(@get 'sortedData').reverse()
     maxNumberOfSlices = @get 'maxNumberOfSlices'
-    minNumberOfSlices = @get 'minNumberOfSlices'
     minSlicePercent = @get 'minSlicePercent'
     otherItems = []
     otherSlice = label: 'Other', percent: 0, _otherItems: otherItems
@@ -398,7 +399,7 @@ ChartPieComponent = ChartBaseComponent.extend(
       .attr(@get 'sliceAttrs')
 
     labelWidth = @get 'labelWidth'
-    labelTrimmer = Ember.Charts.Helpers.LabelTrimmer.create
+    labelTrimmer = @LabelTrimmer.create
       getLabelSize: (d) -> labelWidth
       getLabelText: (d) -> d.data.label
 

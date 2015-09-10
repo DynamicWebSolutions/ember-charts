@@ -4,6 +4,14 @@
 ScatterController = SlideController.extend(
 
   # ---------
+  # Action Hash
+  # ---------
+
+  actions: 
+    dotRadius: (value) ->
+      @set 'dotRadius', value
+
+  # ---------
   # Data Selection
   # ---------
 
@@ -12,7 +20,13 @@ ScatterController = SlideController.extend(
   ).property('rawDataHash')
 
   data: Ember.computed ->
-    @get('rawDataHash')[@get 'selectedData']
+    data = @get('rawDataHash.'+[@get 'selectedData']+'.content')
+    Ember.A(data.toArray().map (datum) ->
+      {
+        group: datum._data.group
+        xValue: datum._data.xValue
+        yValue: datum._data.yValue
+      })    
   .property 'selectedData', 'rawDataHash'
 
   isShowingTotal: no
@@ -31,17 +45,18 @@ ScatterController = SlideController.extend(
 
   # Select which raw data we will pull from
   selectedData: 'groupedPercent'
+
   rawDataHash: Ember.computed ->
-    groupedPercent: App.data.groupedPercent
-    groupedMoney: App.data.groupedMoney
-    ungroupedPercent: App.data.ungroupedPercent
-    ungroupedMoney: App.data.ungroupedMoney
-    '----': App.data.null
-    empty: App.data.empty
-    groupedZero: App.data.groupedZero
-    groupedZeroes: App.data.groupedZeroes
-    ungroupedZero: App.data.ungroupedZero
-    ungroupedZeroes: App.data.ungroupedZeroes
+    groupedPercent: @get 'content.groupedPercent'
+    groupedMoney: @get 'content.groupedMoney'
+    ungroupedPercent: @get 'content.ungroupedPercent'
+    ungroupedMoney: @get 'content.ungroupedMoney'
+    '----': Ember.create(content: Ember.A())
+    empty: Ember.create(content: Ember.A())
+    groupedZero: @get 'content.groupedZero'
+    groupedZeros: @get 'content.groupedZeros'
+    ungroupedZero: @get 'content.ungroupedZero'
+    ungroupedZeros: @get 'content.ungroupedZeros'
 
   dotRadius: 7
 )

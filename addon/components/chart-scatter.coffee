@@ -9,6 +9,7 @@ ChartScatterComponent = ChartBaseComponent.extend(
 	Legend,
 	Axes,
   classNames: ['chart-scatter']
+ 
 
   # ----------------------------------------------------------------------------
   # Scatter Plot Options
@@ -41,7 +42,7 @@ ChartScatterComponent = ChartBaseComponent.extend(
   # ----------------------------------------------------------------------------
 
   isShowingTotal: no
-  totalPointData: null
+  totalPointData: null 
 
   # Data with invalid/negative values removed
   filteredData: Ember.computed ->
@@ -50,19 +51,19 @@ ChartScatterComponent = ChartBaseComponent.extend(
     data.filter (d) ->
       # Surprisingly null is finite
       d.xValue? and d.yValue? and isFinite(d.xValue) and isFinite(d.yValue)
-  .property 'data.@each'
+  .property 'data.[]'
 
   # Aggregate the raw data by group, into separate lists of data points
   groupedData: Ember.computed ->
     data = @get('filteredData')
     return [] if Ember.isEmpty data
-    groupedData = Ember.Charts.Helpers.groupBy data, (d) =>
+    groupedData = @groupBy data, (d) =>
       d.group ? @get('ungroupedSeriesName')
     v for k,v of groupedData
-  .property 'filteredData.@each'
+  .property 'filteredData.[]'
 
   groupNames: Ember.computed ->
-    d.get(0).group for d in @get('groupedData')
+    d[0].group for d in @get('groupedData')
   .property 'groupedData'
 
   numGroups: Ember.computed.alias 'groupedData.length'
@@ -115,7 +116,7 @@ ChartScatterComponent = ChartBaseComponent.extend(
       [ xMin * (1 - @get('graphPadding')), xMin * (1 + @get('graphPadding')) ]
     else
       [ xMin, xMax ]
-  .property 'filteredData.@each', 'isShowingTotal', 'totalPointData'
+  .property 'filteredData.[]', 'isShowingTotal', 'totalPointData'
 
   yDomain: Ember.computed ->
     totalData = if @get('isShowingTotal') then [@get('totalPointData')] else []
@@ -126,7 +127,7 @@ ChartScatterComponent = ChartBaseComponent.extend(
       [ yMin * (1 - @get('graphPadding')), yMin * (1 + @get('graphPadding')) ]
     else
       [ yMin, yMax ]
-  .property('filteredData.@each', 'isShowingTotal', 'totalPointData',
+  .property('filteredData.[]', 'isShowingTotal', 'totalPointData',
     'graphPadding')
 
   # The X axis scale spans the range of Y values plus any graphPadding
@@ -217,8 +218,8 @@ ChartScatterComponent = ChartBaseComponent.extend(
     displayGroups = @get 'displayGroups'
 
     legendData = @get('groupedData').map (d, i) ->
-      name = d.get(0).group
-      value = if d.get('length') is 1 then d.get(0) else null
+      name = d[0].group
+      value = if d.length is 1 then d[0] else null
 
       label: name # `label` is displayed in legend text
       group: name # `group` is used by getGroupShape and getGroupColor
@@ -290,9 +291,7 @@ ChartScatterComponent = ChartBaseComponent.extend(
   pointAttrs: Ember.computed ->
     # TODO: actually make the indices correspond to each group
     # we'll probably have to preprocess the data
-    d: d3.svg.symbol()
-      .size(@get 'dotShapeArea')
-      .type(@get 'getGroupShape')
+    d: d3.svg.symbol().size(@get 'dotShapeArea').type(@get 'getGroupShape')
     fill: if @get('displayGroups') then @get('getGroupColor') else 'transparent'
     stroke: @get('getGroupColor')
     'stroke-width': 1.5
