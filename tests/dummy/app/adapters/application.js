@@ -9,6 +9,9 @@ var ApplicationAdapter = DS.RESTAdapter.extend({
   pathForType: function(type) {
     var camelized = Ember.String.camelize(type);
     return camelized; //Ember.String.pluralize(camelized);
+  },
+  shouldReloadAll: function() {
+  	return true;
   }
 });
 

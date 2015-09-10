@@ -46,8 +46,8 @@ PieController = SlideController.extend
     many_values: @get 'content.manyValues'
     monthly_return_single_period: @get 'content.monthlyReturnSinglePeriod'
     high_net_worth_duration: @get 'content.highNetWorthDuration'
-    '----': Ember.create(content: Ember.A())
-    empty: Ember.create(content: Ember.A())
+    '----': Object.create(content: Ember.A())
+    empty: Object.create(content: Ember.A())
     one_value: @get 'content.oneValue'
     two_values: @get 'content.twoValues'
     zero: @get 'content.zero'

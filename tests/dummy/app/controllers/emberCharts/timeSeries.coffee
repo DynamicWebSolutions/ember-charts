@@ -75,7 +75,7 @@ TimesSeriesController = SlideController.extend
     daily_four_series: @get 'content.dailyFourSeries'
     daily_five_series: @get 'content.dailyFiveSeries'
     daily_six_series: @get 'content.dailySixSeries'
-    '----': Ember.create(content: Ember.A())
+    '----': Object.create(content: Ember.A())
     value_p1d_p1y: @get 'content.valuep1dp1y'
     value_p1w_p1y: @get 'content.valuep1wp1y'
     value_p1m_p1y: @get 'content.valuep1mp1y'
@@ -85,7 +85,7 @@ TimesSeriesController = SlideController.extend
     zeroes_ungrouped: @get 'content.zeroesUngrouped'
     same_value_grouped: @get 'content.sameValueGrouped'
     same_value_ungrouped: @get 'content.sameValueGrouped'
-    empty: Ember.create(content: Ember.A())
+    empty: Object.create(content: Ember.A())
 
   barDataHash: Ember.computed.alias 'lineDataHash'
   selectedLineData: 'daily_curr_value'

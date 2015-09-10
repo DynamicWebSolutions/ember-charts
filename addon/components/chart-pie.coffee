@@ -49,14 +49,14 @@ ChartPieComponent = ChartBaseComponent.extend(
     data = @get 'data'
     return [] if Ember.isEmpty data
     data.filter (child) -> child.value >= 0
-  .property 'data.@each'
+  .property 'data.[]'
 
   # Negative values that have been discarded from the data
   rejectedData: Ember.computed ->
     data = @get 'data'
     return [] if Ember.isEmpty data
     data.filter (child) -> child.value < 0
-  .property 'data.@each'
+  .property 'data.[]'
 
   # Valid data points that have been sorted by selectedSortType
   sortedData: Ember.computed ->

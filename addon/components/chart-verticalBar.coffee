@@ -194,7 +194,7 @@ ChartVerticalbarComponent = ChartBaseComponent.extend(
     groups = _.values(@get 'groupedData').map (g) ->
       _.pluck g, 'label'
     _.uniq _.flatten(groups)
-  .property 'groupedData.@each'
+  .property 'groupedData.[]'
 
   # The range of labels assigned to each group
   xBetweenGroupDomain: Ember.computed.alias 'groupNames'

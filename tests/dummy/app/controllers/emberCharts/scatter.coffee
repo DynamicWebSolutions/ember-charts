@@ -51,8 +51,8 @@ ScatterController = SlideController.extend(
     groupedMoney: @get 'content.groupedMoney'
     ungroupedPercent: @get 'content.ungroupedPercent'
     ungroupedMoney: @get 'content.ungroupedMoney'
-    '----': Ember.create(content: Ember.A())
-    empty: Ember.create(content: Ember.A())
+    '----': Object.create(content: Ember.A())
+    empty: Object.create(content: Ember.A())
     groupedZero: @get 'content.groupedZero'
     groupedZeros: @get 'content.groupedZeros'
     ungroupedZero: @get 'content.ungroupedZero'
