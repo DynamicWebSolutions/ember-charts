@@ -132,7 +132,7 @@ ChartBaseComponent = Ember.Component.extend(
   didInsertElement: ->
     @_super()
     Ember.run.schedule 'afterRender', this, @_updateDimensions
-    @drawOnce()
+    @drawOnce()  
 
   drawOnce: ->
     Ember.run.once this, @get('draw')
