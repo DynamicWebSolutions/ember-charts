@@ -31,7 +31,7 @@ const ChartComponent = Ember.Component.extend(ColorableMixin, ResizeHandlerMixin
    * An array of the values in the data that is passed into the chart
    * @type {Array.<Number>}
    */
-  allFinishedDataValues: Ember.computed('finishedData.@each.value', function() {
+  allFinishedDataValues: Ember.computed('finishedData.[].value', function() {
     return this.get('finishedData').map((d) => d.value);
   }),
 
