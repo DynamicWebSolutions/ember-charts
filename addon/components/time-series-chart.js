@@ -71,11 +71,24 @@ const TimeSeriesChartComponent = ChartComponent.extend(LegendMixin,
   // ----------------------------------------------------------------------------
 
   // Combine all data for testing purposes
-  finishedData: Ember.computed('_groupedLineData.[].values', '_groupedBarData.[]', function() {
-    return {
-      lineData: this.get('_groupedLineData'),
-      groupedBarData: this.get('_groupedBarData')
-    };
+  finishedData: Ember.computed('_groupedLineData.[]', '_groupedBarData.[]', function() {
+    var values = [];
+
+    _.flattenDeep(this.get('_groupedBarData'), 'value')
+    .forEach(bar => {
+      return values.push(bar.value);
+    });
+
+    _.flattenDeep(this.get('_groupedLineData'))
+    .forEach(line => {
+
+      return _.pluck(line.values, 'value')
+      .forEach(value => {
+        return values.push(value);
+      });
+    });
+
+    return values;
   }),
 
   hasNoData: Ember.computed('_hasBarData', '_hasLineData', function() {
