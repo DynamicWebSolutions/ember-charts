@@ -74,7 +74,7 @@ const TimeSeriesChartComponent = ChartComponent.extend(LegendMixin,
   finishedData: Ember.computed('_groupedLineData.[]', '_groupedBarData.[]', function() {
     var values = [];
 
-    _.flattenDeep(this.get('_groupedBarData'), 'value')
+    _.flattenDeep(this.get('_groupedBarData'))
     .forEach(bar => {
       return values.push(bar.value);
     });
