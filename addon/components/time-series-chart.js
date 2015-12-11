@@ -76,15 +76,14 @@ const TimeSeriesChartComponent = ChartComponent.extend(LegendMixin,
 
     _.flattenDeep(this.get('_groupedBarData'))
     .forEach(bar => {
-      return values.push(bar.value);
+      return values.push(bar);
     });
 
     _.flattenDeep(this.get('_groupedLineData'))
     .forEach(line => {
 
-      return _.pluck(line.values, 'value')
-      .forEach(value => {
-        return values.push(value);
+      return line.values.forEach(point => {
+        values.push(point);
       });
     });
 
