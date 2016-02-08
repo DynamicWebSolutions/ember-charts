@@ -90,6 +90,7 @@ const TimeSeriesChartComponent = ChartComponent.extend(LegendMixin,
     return values;
   }),
 
+
   hasNoData: Ember.computed('_hasBarData', '_hasLineData', function() {
     return !this.get('_hasBarData') && !this.get('_hasLineData');
   }),
